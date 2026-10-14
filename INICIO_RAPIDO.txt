@@ -1,0 +1,256 @@
+════════════════════════════════════════════════════════════════════════════════
+  DASHBOARD DE AUDITORÍA v1.0 - INSTRUCCIONES RÁPIDAS
+════════════════════════════════════════════════════════════════════════════════
+
+📋 DESCRIPCIÓN
+Gestor interactivo de hallazgos de auditoría. Consolida datos de SIG y 
+Aseguramiento en un único dashboard análitico.
+
+📊 DATOS: 36 registros con información (12 SIG + 24 Aseguramiento)
+     La matriz Excel reserva ~204 filas por hoja; las filas vacías no se cargan.
+
+════════════════════════════════════════════════════════════════════════════════
+🚀 CÓMO INICIAR
+════════════════════════════════════════════════════════════════════════════════
+
+OPCIÓN 1: Abre directamente en navegador
+└─ Haz doble clic en: index.html
+
+OPCIÓN 2: Usa servidor local (recomendado para mejor rendimiento)
+
+  Para Windows (PowerShell):
+  ─────────────────────────
+  cd "C:\Users\lxisilva\OneDrive - Politécnico Grancolombiano\Documentos\Proyectos\Dashboard_Auditoria"
+  python -m http.server 8000
+  
+  Luego abre en navegador: http://localhost:8000
+
+  Para Mac/Linux:
+  ───────────────
+  cd Dashboard_Auditoria
+  python3 -m http.server 8000
+  
+  Luego abre: http://localhost:8000
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 FUNCIONALIDADES PRINCIPALES
+════════════════════════════════════════════════════════════════════════════════
+
+✓ VISTA RESUMEN EJECUTIVO
+  - 8 KPIs principales
+  - 3 gráficos interactivos
+  - Tabla sumaria por auditoría
+
+✓ VISTA SEGUIMIENTO DETALLADO
+  - Tabla de 11 columnas
+  - Búsqueda y filtrado en tiempo real
+  - Panel detalle con offcanvas
+
+✓ ALERTAS Y PRIORIZACIÓN
+  - Nivel de riesgo global
+  - Top 10 hallazgos críticos
+  - Hallazgos reincidentes
+  - Hallazgos sin avance
+
+✓ FILTROS GLOBALES
+  - Proceso (interdependiente con Subproceso)
+  - Subproceso
+  - Auditoría
+  - Criticidad (Alto/Medio/Bajo)
+  - Estado (Abierto/Ejecución/Cerrado/Vencido)
+  - Origen (SIG/Aseguramiento)
+  - Búsqueda global
+
+✓ EXPORTACIONES
+  - Excel (.xlsx)
+  - PDF (.pdf)
+  - CSV (.csv)
+
+════════════════════════════════════════════════════════════════════════════════
+⌨️  ATAJOS DE TECLADO
+════════════════════════════════════════════════════════════════════════════════
+
+Ctrl+F    → Enfocar en búsqueda global
+
+════════════════════════════════════════════════════════════════════════════════
+🛠️  DEBUGGING EN CONSOLA (F12)
+════════════════════════════════════════════════════════════════════════════════
+
+window.DEBUG.showStats()              // Ver estadísticas globales
+window.DEBUG.showData(10)             // Ver primeros 10 registros
+window.DEBUG.getFilteredCount()       // Contar registros actuales
+window.DEBUG.exportCurrentView()      // Exportar vista actual
+window.DEBUG.clearFiltersDebug()      // Limpiar todos los filtros
+
+════════════════════════════════════════════════════════════════════════════════
+📁 ESTRUCTURA DE ARCHIVOS
+════════════════════════════════════════════════════════════════════════════════
+
+Dashboard_Auditoria/
+├── index.html                         ← ABRE ESTE ARCHIVO
+├── css/styles.css                     (Estilos corporativos)
+├── js/
+│   ├── app.js                         (Inicializador)
+│   ├── dataManager.js                 (Lectura/procesamiento Excel)
+│   ├── dashboard.js                   (Gráficos y KPIs)
+│   ├── filters.js                     (Lógica de filtros)
+│   └── exports.js                     (Exportaciones)
+├── data/
+│   └── Matriz_Seguimiento_Hallazgos.xlsx
+└── README.md                          (Documentación completa)
+
+════════════════════════════════════════════════════════════════════════════════
+📊 INFORMACIÓN DEL ARCHIVO EXCEL
+════════════════════════════════════════════════════════════════════════════════
+
+Ubicación: /data/Matriz_Seguimiento_Hallazgos.xlsx
+
+Hoja fuente:
+  1. Hoja1 del consolidado 2026
+  ────────────────────────────────────────────
+  Total cargado en dashboard:         (88 registros, sujeto a validación)
+
+Columnas principales:
+  • Código Hallazgo
+  • Auditoría
+  • Proceso / Subproceso Auditado
+  • Criticidad (Alto/Medio/Bajo)
+  • Estado
+  • % Avance
+  • Responsable
+  • Fecha Detección
+  • Fecha Compromiso
+  • Fecha Cierre
+  • Tipo de Validación
+  • Resultado de Validación
+  • Reincidencia
+  [+ más campos]
+
+════════════════════════════════════════════════════════════════════════════════
+⚠️  SOLUCIÓN DE PROBLEMAS
+════════════════════════════════════════════════════════════════════════════════
+
+PROBLEMA: "Error al cargar el archivo Excel"
+SOLUCIÓN:
+  ✓ Verifica que exista: /data/Matriz_Seguimiento_Hallazgos.xlsx
+  ✓ El archivo NO debe estar abierto en Excel
+  ✓ Los nombres de hojas deben ser exactos
+  ✓ Abre consola (F12) para ver error exacto
+
+PROBLEMA: "No aparecen datos"
+SOLUCIÓN:
+  ✓ Recarga la página (F5)
+  ✓ Limpia caché: Ctrl+Shift+Delete
+  ✓ Ejecuta en consola: localStorage.clear()
+  ✓ Prueba en navegador distinto
+
+PROBLEMA: "Los gráficos están en blanco"
+SOLUCIÓN:
+  ✓ Espera a que cargue completamente
+  ✓ Desactiva filtros para ver datos completos
+  ✓ Verifica en consola si hay errores
+
+════════════════════════════════════════════════════════════════════════════════
+🎨 CARACTERÍSTICAS DE DISEÑO
+════════════════════════════════════════════════════════════════════════════════
+
+Paleta de Colores:
+  🔵 Azul Corporativo   #0066CC
+  ⚫ Gris Oscuro        #2c3e50
+  🟢 Verde              #28a745
+  🟡 Amarillo           #ffc107
+  🔴 Rojo               #dc3545
+  ⚪ Blanco             #FFFFFF
+
+Diseño:
+  ✓ Responsive (Desktop/Tablet/Mobile)
+  ✓ Tipo Power BI Premium
+  ✓ Sombras y bordes redondeados
+  ✓ Animaciones suaves
+  ✓ Modo claro predominante
+  ✓ Paneles oscuros para métricas
+
+════════════════════════════════════════════════════════════════════════════════
+💾 PERSISTENCIA DE DATOS
+════════════════════════════════════════════════════════════════════════════════
+
+Los filtros se guardan automáticamente en localStorage:
+  - Se recuperan al recargar la página
+  - Se pueden limpiar: botón "Limpiar"
+  - Se pueden borrar completamente: localStorage.clear()
+
+════════════════════════════════════════════════════════════════════════════════
+📈 CÁLCULOS ESPECIALES
+════════════════════════════════════════════════════════════════════════════════
+
+SEMÁFORO DE GESTIÓN:
+  🔴 Vencido           → Pasada fecha compromiso
+  🟡 Próximo a vencer  → Menos de 5 días
+  🟢 En término        → Dentro del plazo
+
+NIVEL DE RIESGO (por proceso):
+  ALTO    → Score > 6
+  MEDIO   → Score 3-6
+  BAJO    → Score < 3
+
+SCORE DE PRIORIDAD (para Top 10):
+  Score = Criticidad × Días_Vencidos × (100 - % Avance)
+
+════════════════════════════════════════════════════════════════════════════════
+✨ PRÓXIMAS VERSIONES (Roadmap)
+════════════════════════════════════════════════════════════════════════════════
+
+v1.1:  📱 Aplicación móvil
+v1.2:  🔔 Notificaciones en tiempo real
+v1.3:  📧 Envío automático de reportes
+v1.4:  🔐 Sistema de autenticación
+v1.5:  ☁️  Sincronización en la nube
+v2.0:  🤖 Análisis predictivo con IA
+
+════════════════════════════════════════════════════════════════════════════════
+📞 INFORMACIÓN TÉCNICA
+════════════════════════════════════════════════════════════════════════════════
+
+Stack Tecnológico:
+  • HTML5
+  • CSS3
+  • JavaScript Vanilla (sin frameworks)
+  • Bootstrap 5
+  • Chart.js
+  • DataTables
+  • SheetJS (lectura Excel)
+  • jsPDF (generación PDF)
+
+Navegadores soportados:
+  ✓ Chrome 90+
+  ✓ Firefox 88+
+  ✓ Safari 14+
+  ✓ Edge 90+
+
+Performance:
+  • Optimizado para 500+ registros
+  • Sin conexión a servidor
+  • Carga diferida de gráficos
+  • Caché en memoria
+
+════════════════════════════════════════════════════════════════════════════════
+📜 LICENCIA Y CRÉDITOS
+════════════════════════════════════════════════════════════════════════════════
+
+Desarrollado para:
+  Politécnico Grancolombiano
+  Dirección de Auditoría Interna
+  Departamento de Aseguramiento Institucional
+
+Año: 2026
+Versión: 1.0
+
+════════════════════════════════════════════════════════════════════════════════
+
+¡Listo! El dashboard está 100% funcional.
+
+Abre: index.html
+
+Cualquier problema, consulta README.md o abre la consola (F12) para debugging.
+
+════════════════════════════════════════════════════════════════════════════════

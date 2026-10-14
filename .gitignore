@@ -1,0 +1,13 @@
+# Credenciales de Supabase — NO subir al repositorio
+js/config.js
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo

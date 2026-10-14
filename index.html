@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría Interna 2026 - Resultados ejecutivos</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- SheetJS para lectura de Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- jsPDF y html2canvas para exportaciones -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css?v=20260826f">
+</head>
+<body>
+    <!-- Navbar Principal -->
+    <nav class="navbar navbar-dark navbar-expand-lg bg-gradient mb-4">
+        <div class="container-fluid">
+            <div class="navbar-identity">
+                <span class="navbar-brand-icon"><i class="fas fa-clipboard-check"></i></span>
+                <div class="navbar-brand-text">
+                    <span class="navbar-brand mb-0">Control Interno</span>
+                    <small class="navbar-subtitle">Sistema de gestión y seguimiento de hallazgos</small>
+                </div>
+            </div>
+            <div class="ms-auto d-flex gap-2 navbar-toolbar">
+                <button class="btn btn-sm btn-outline-light" id="btnRefresh" title="Actualizar datos">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+                <button class="btn btn-sm btn-outline-light" id="btnExportExcel" title="Exportar a Excel">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <button class="btn btn-sm btn-outline-light" id="btnExportPdf" title="Exportar a PDF">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <!-- Sección de Filtros Globales -->
+        <section class="filter-panel mb-4 p-3 bg-white rounded-3 shadow-sm">
+            <div class="row g-3">
+                <div class="col-12">
+                    <h5 class="mb-3 text-dark-emphasis">
+                        <i class="fas fa-filter me-2 text-primary"></i> Filtros Globales
+                    </h5>
+                </div>
+
+                <div class="col-12 filter-auditoria">
+                    <label class="form-label small fw-semibold">Auditoría</label>
+                    <select id="filterAuditoria" class="form-select form-select-sm">
+                        <option value="">-- Todas las Auditorías --</option>
+                    </select>
+                </div>
+
+                <!-- Jerarquía: Unidad > Proceso > Subproceso -->
+                <div class="col-xl col-md-6">
+                    <label class="form-label small fw-semibold">Unidad</label>
+                    <select id="filterUnidad" class="form-select form-select-sm">
+                        <option value="">-- Todas las Unidades --</option>
+                    </select>
+                </div>
+
+                <div class="col-xl col-md-6">
+                    <label class="form-label small fw-semibold">Proceso</label>
+                    <select id="filterProceso" class="form-select form-select-sm">
+                        <option value="">-- Todos los Procesos --</option>
+                    </select>
+                </div>
+
+                <!-- Filtro 2: Subproceso -->
+                <div class="col-xl col-md-6">
+                    <label class="form-label small fw-semibold">Subproceso</label>
+                    <select id="filterSubproceso" class="form-select form-select-sm">
+                        <option value="">-- Todos los Subprocesos --</option>
+                    </select>
+                </div>
+
+                <div class="col-xl col-md-6">
+                    <label class="form-label small fw-semibold">Categoría</label>
+                    <select id="filterCategoria" class="form-select form-select-sm">
+                        <option value="">-- Todas las Categorías --</option>
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar -->
+                <div class="col-xl col-md-6 d-flex align-items-end">
+                    <button id="btnLimpiarFiltros" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-resumen" data-bs-toggle="tab" data-bs-target="#vista-resumen" type="button" role="tab" aria-controls="vista-resumen" aria-selected="true">Resumen Ejecutivo</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-explorar" data-bs-toggle="tab" data-bs-target="#vista-explorar" type="button" role="tab" aria-controls="vista-explorar" aria-selected="false">Explorar hallazgos</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-seguimiento" data-bs-toggle="tab" data-bs-target="#vista-detallada" type="button" role="tab" aria-controls="vista-detallada" aria-selected="false">Seguimiento Detallado</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-gestion" data-bs-toggle="tab" data-bs-target="#vista-gestion" type="button" role="tab" aria-controls="vista-gestion" aria-selected="false">Gestión Operativa</button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+        <!-- VISTA 1: RESUMEN EJECUTIVO -->
+        <section id="vista-resumen" class="tab-pane fade show active mb-5" role="tabpanel" aria-labelledby="tab-resumen">
+            <h4 class="mb-4 text-dark-emphasis">
+                <i class="fas fa-chart-line me-2 text-primary"></i> Resultados ejecutivos
+            </h4>
+
+            <!-- KPI Cards -->
+            <div class="row g-3 mb-4 executive-kpis">
+                <div class="col-xl col-md-6">
+                    <div class="kpi-card kpi-total">
+                        <div class="kpi-value" id="kpiTotalHallazgos">0</div>
+                        <div class="kpi-label">Total Hallazgos</div>
+                        <div class="kpi-meta">Registros analizados</div>
+                        <div class="kpi-icon"><i class="fas fa-layer-group"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl col-md-6">
+                    <div class="kpi-card kpi-improvement kpi-category-card" data-category="Oportunidad de Mejora" role="button" tabindex="0" title="Explorar oportunidades de mejora">
+                        <div class="kpi-value" id="kpiCriticos">0</div>
+                        <div class="kpi-label">Oportunidades de mejora</div>
+                        <div class="kpi-meta" id="kpiMetaOportunidades">0% del total</div>
+                        <div class="kpi-icon"><i class="fas fa-lightbulb"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl col-md-6">
+                    <div class="kpi-card kpi-nonconformity kpi-category-card" data-category="No Conformidad" role="button" tabindex="0" title="Explorar no conformidades">
+                        <div class="kpi-value" id="kpiMedios">0</div>
+                        <div class="kpi-label">No conformidades</div>
+                        <div class="kpi-meta" id="kpiMetaNoConformidades">0% del total</div>
+                        <div class="kpi-icon"><i class="fas fa-ban"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl col-md-6">
+                    <div class="kpi-card kpi-strength kpi-category-card" data-category="Fortaleza" role="button" tabindex="0" title="Explorar fortalezas">
+                        <div class="kpi-value" id="kpiBajos">0</div>
+                        <div class="kpi-label">Fortalezas identificadas</div>
+                        <div class="kpi-meta" id="kpiMetaFortalezas">0% del total</div>
+                        <div class="kpi-icon"><i class="fas fa-thumbs-up"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl col-md-6">
+                    <div class="kpi-card kpi-risk kpi-category-card" data-category="Nuevo Riesgo" role="button" tabindex="0" title="Explorar nuevos riesgos">
+                        <div class="kpi-value" id="kpiCerrados">0</div>
+                        <div class="kpi-label">Nuevos riesgos</div>
+                        <div class="kpi-meta" id="kpiMetaRiesgos">0% del total</div>
+                        <div class="kpi-icon"><i class="fas fa-shield-halved"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row g-3 mb-4">
+                <!-- Gráfico 1: Criticidad -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-card">
+                        <h6 class="chart-title">Hallazgos por categoría</h6>
+                        <canvas id="chartCriticidad"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico 2: Procesos -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="chart-card">
+                        <h6 class="chart-title">Hallazgos por Subproceso</h6>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chartProcesos"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- El estado de acciones pertenece al seguimiento operativo, no al resumen 2026. -->
+            </div>
+
+        </section>
+
+        <!-- VISTA 2: GESTIÓN OPERATIVA -->
+        <section id="vista-gestion" class="tab-pane fade mb-5" role="tabpanel" aria-labelledby="tab-gestion">
+            <h4 class="mb-4 text-dark-emphasis">
+                <i class="fas fa-cogs me-2 text-primary"></i> Gestión Operativa
+            </h4>
+
+            <!-- Fila 1: Semáforo de Gestión + Alertas Automáticas -->
+            <div class="row g-3 mb-4">
+                <!-- Semáforo de Gestión -->
+                <div class="col-lg-6 col-md-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-traffic-light me-2 text-warning"></i>Semáforo de Gestión</h6>
+                        </div>
+                        <div class="card-body" id="semaforoGestion">
+                            <div class="semaforo-item semaforo-rojo">
+                                <span class="semaforo-dot bg-danger"></span>
+                                <span class="semaforo-label">Vencidos sin cierre</span>
+                                <span class="semaforo-valor" id="semVencidos">0</span>
+                            </div>
+                            <div class="semaforo-item semaforo-naranja">
+                                <span class="semaforo-dot bg-warning"></span>
+                                <span class="semaforo-label">Próximos a vencer (≤15 días)</span>
+                                <span class="semaforo-valor" id="semProximos">0</span>
+                            </div>
+                            <div class="semaforo-item semaforo-verde">
+                                <span class="semaforo-dot bg-success"></span>
+                                <span class="semaforo-label">En término</span>
+                                <span class="semaforo-valor" id="semTermino">0</span>
+                            </div>
+                            <div class="semaforo-item semaforo-azul">
+                                <span class="semaforo-dot bg-info"></span>
+                                <span class="semaforo-label">Cerrados con validación</span>
+                                <span class="semaforo-valor" id="semCerrados">0</span>
+                            </div>
+                            <div class="semaforo-item semaforo-gris">
+                                <span class="semaforo-dot" style="background-color:#6c757d"></span>
+                                <span class="semaforo-label">Sin responsable asignado</span>
+                                <span class="semaforo-valor" id="semSinResponsable">0</span>
+                            </div>
+                            <div class="semaforo-item semaforo-lila">
+                                <span class="semaforo-dot" style="background-color:#6f42c1"></span>
+                                <span class="semaforo-label">Sin tipo de validación</span>
+                                <span class="semaforo-valor" id="semSinValidacion">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas Automáticas -->
+                <div class="col-lg-6 col-md-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-bell me-2 text-danger"></i>Alertas Automáticas</h6>
+                        </div>
+                        <div class="card-body" id="alertasAutomaticas">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fila 2: Nivel de Riesgo por Proceso + Hallazgos Reincidentes -->
+            <div class="row g-3 mb-4">
+                <!-- Nivel de Riesgo por Proceso -->
+                <div class="col-lg-8 col-md-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-shield-alt me-2 text-primary"></i>Nivel de Riesgo por Proceso</h6>
+                            <small class="text-muted">Calculado por: cantidad de hallazgos · criticidad · reincidencia · vencimientos</small>
+                        </div>
+                        <div class="card-body" id="riesgoPorProceso">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hallazgos Reincidentes -->
+                <div class="col-lg-4 col-md-12">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-redo me-2 text-warning"></i>Hallazgos Reincidentes</h6>
+                        </div>
+                        <div class="card-body" id="reincidenciaDetalle">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fila 3: Top 10 Priorización Inteligente -->
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                            <h6 class="mb-0 fw-bold text-dark">
+                                <i class="fas fa-list-ol me-2 text-primary"></i>Top 10 — Priorización Inteligente
+                            </h6>
+                            <small class="text-muted">Score = Criticidad × Días Vencidos × (100 − % Avance)</small>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table id="tablaTop10" class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 5%">#</th>
+                                            <th>Subproceso</th>
+                                            <th>Hallazgo</th>
+                                            <th>Criticidad</th>
+                                            <th>Origen</th>
+                                            <th>Días Vencidos</th>
+                                            <th>% Avance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbodyTop10">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 3: EXPLORADOR DE HALLAZGOS -->
+        <section id="vista-explorar" class="tab-pane fade mb-5" role="tabpanel" aria-labelledby="tab-explorar">
+            <h4 class="mb-2 text-dark-emphasis"><i class="fas fa-magnifying-glass-chart me-2 text-primary"></i>Explorar hallazgos</h4>
+            <p class="text-muted small mb-3">Seleccione una dimensión para revisar los registros asociados y abrir su información completa.</p>
+            <div class="explorer-active-filters" id="exploradorFiltrosActivos"></div>
+            <div class="explorer-layout">
+                <div class="explorer-selector" id="exploradorItems"></div>
+                <div class="explorer-detail" id="exploradorDetalle">
+                    <p class="explorer-placeholder"><i class="fas fa-magnifying-glass-chart"></i>Seleccione una categoría, unidad, proceso o subproceso para ver sus hallazgos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA 4: SEGUIMIENTO DETALLADO -->
+        <section id="vista-detallada" class="tab-pane fade mb-5" role="tabpanel" aria-labelledby="tab-seguimiento">
+            <h4 class="mb-4 text-dark-emphasis">
+                <i class="fas fa-list-check me-2 text-primary"></i> Seguimiento Detallado
+            </h4>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="fas fa-table me-2 text-primary"></i>Registros de Hallazgos
+                    </h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <small class="text-muted" id="totalRegistros">0 registros</small>
+                        <input type="text" class="form-control form-control-sm" id="searchDetallado" placeholder="Buscar..." style="width: 180px; font-size: 0.8rem;">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table id="tablaSeguimientoDetallado" class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Auditoría</th>
+                                    <th>Subproceso</th>
+                                    <th>Criticidad</th>
+                                    <th>Descripción</th>
+                                    <th>Responsable</th>
+                                    <th>Estado</th>
+                                    <th>Tipo de Acción</th>
+                                    <th class="cond-col cond-col-ac" id="thCond1">N° de OM / Descrip de Actividad</th>
+                                    <th class="cond-col cond-col-pct" id="thCond2">% Avance OM</th>
+                                    <th>% Avance</th>
+                                    <th>Resultado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyDetallado">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-between align-items-center py-2">
+                    <small class="text-muted" id="detalladoInfo">Mostrando 0 registros</small>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0" id="detalladoPagination">
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <!-- Panel Lateral - Detalle Hallazgo -->
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="panelDetalleHallazgo" aria-labelledby="labelDetalleHallazgo">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="labelDetalleHallazgo">Detalle del Hallazgo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body p-0" id="contenidoDetalleHallazgo">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white-50 py-4 mt-5">
+        <div class="container-fluid text-center small">
+            <p class="mb-1">Fuente: consolidado de Auditoría Interna 2026.</p>
+            <p class="mb-0">Dashboard de Auditoría v1.0 | © 2026 Politécnico Grancolombiano | Últimas actualizaciones: <span id="lastUpdate">--</span></p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery para DataTables -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <!-- Supabase JS (cliente para diligenciamiento online) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Configuración Supabase: example.js se despliega en GitHub Pages; config.js local lo sobreescribe -->
+    <script src="js/config.example.js"></script>
+    <script src="js/config.js" onerror="void 0"></script>
+
+    <!-- Custom Scripts -->
+    <script src="js/dataManager.js?v=20260828"></script>
+    <script src="js/diligenciaService.js?v=20260828"></script>
+    <script src="js/dashboard.js?v=20260828"></script>
+    <script src="js/filters.js?v=20260828"></script>
+    <script src="js/exports.js?v=20260828"></script>
+    <script src="js/app.js?v=20260828"></script>
+</body>
+</html>
