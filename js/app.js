@@ -21,12 +21,25 @@ class Application {
             // Paso 1: Cargar datos desde Excel
             console.log('📂 Cargando datos...');
             const dataLoaded = await dataManager.loadData();
-            
+
             if (!dataLoaded) {
-                throw new Error('No se pudieron cargar los datos del Excel');
+                // Sin servidor (HTML descargado) o archivo ausente: pedir el Excel al usuario
+                this.showExcelPicker(dataManager.lastError);
+                return;
             }
             console.log('✓ Datos cargados exitosamente');
+            await this.startDashboard();
+        } catch (error) {
+            console.error('✗ ERROR AL INICIALIZAR:', error);
+            this.showErrorMessage(error);
+        }
+    }
 
+    /**
+     * Pasos posteriores a la carga del Excel
+     */
+    async startDashboard() {
+        try {
             // Paso 2: Inicializar servicio de diligenciamiento y cargar datos guardados
             console.log('🔗 Conectando diligenciamiento...');
             diligenciaService.init();
@@ -74,6 +87,51 @@ class Application {
     }
 
     /**
+     * Mostrar aviso con selector de archivo cuando el Excel no se pudo leer automáticamente
+     */
+    showExcelPicker(error) {
+        const isLocalFile = window.location.protocol === 'file:';
+        const div = document.createElement('div');
+        div.className = 'alert alert-warning m-3 excel-picker';
+        div.role = 'alert';
+        div.innerHTML = `
+            <h5 class="alert-heading"><i class="fas fa-file-excel me-2"></i>Seleccione el archivo de hallazgos</h5>
+            <p class="mb-2">${isLocalFile
+                ? 'El dashboard se abrió directamente desde el equipo y el navegador no permite leer el Excel de forma automática.'
+                : `No se pudo leer <strong>${dataManager.excelFile}</strong>${error ? ` (${this.escapeText(error.message)})` : ''}.`}</p>
+            <p class="mb-3 small">Elija el archivo <strong>CONSOLIDADO HALLAZGOS AUDITORÍA 2026.xlsx</strong> (carpeta <strong>data</strong> del proyecto) para cargar el tablero.</p>
+            <label class="btn btn-sm btn-primary mb-0">
+                <i class="fas fa-folder-open me-1"></i> Seleccionar archivo Excel
+                <input type="file" id="inputExcelLocal" accept=".xlsx,.xls" hidden>
+            </label>
+            <span class="small ms-2" id="excelPickerStatus"></span>
+        `;
+        const container = document.querySelector('.container-fluid.px-4') || document.body;
+        container.insertBefore(div, container.firstChild);
+
+        div.querySelector('#inputExcelLocal').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const status = div.querySelector('#excelPickerStatus');
+            status.textContent = `Leyendo ${file.name}…`;
+            const ok = await dataManager.loadFromFile(file);
+            if (!ok) {
+                status.textContent = `No se pudo leer el archivo: ${dataManager.lastError ? dataManager.lastError.message : 'formato no válido'}`;
+                event.target.value = '';
+                return;
+            }
+            div.remove();
+            await this.startDashboard();
+        });
+    }
+
+    escapeText(text) {
+        const span = document.createElement('span');
+        span.textContent = String(text || '');
+        return span.innerHTML;
+    }
+
+    /**
      * Configurar eventos globales
      */
     setupGlobalEvents() {
@@ -86,6 +144,8 @@ class Application {
                 diligenciaService.mergeIntoRecords(dataManager.consolidatedData);
                 filterManager.clearFilters();
                 this.showNotification('Datos actualizados correctamente');
+            } else {
+                this.showNotification('No se pudo volver a leer el Excel. Recargue la página y selecciónelo de nuevo.', 'warning');
             }
         });
 

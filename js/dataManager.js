@@ -109,7 +109,13 @@ class DataManager {
      * Cargar datos desde Excel
      */
     async loadData() {
+        this.lastError = null;
         try {
+            // Abierto con doble clic (file://): el navegador bloquea fetch de archivos locales
+            if (window.location.protocol === 'file:') {
+                throw new Error('El dashboard se abrió como archivo local (file://) y el navegador no permite leer el Excel automáticamente.');
+            }
+
             // Cache-bust para forzar descarga fresca en GitHub Pages y evitar respuestas 304/500 cacheadas
             const url = this.excelFile + '?t=' + Date.now();
             console.log(`🔎 Intentando cargar archivo Excel: ${url}`);
@@ -117,82 +123,106 @@ class DataManager {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status} ${response.statusText} al solicitar ${this.excelFile}`);
             }
-            const buffer = await response.arrayBuffer();
+            return this.loadFromBuffer(await response.arrayBuffer());
+        } catch (error) {
+            console.error('✗ Error al cargar Excel:', error);
+            this.lastError = error;
+            return false;
+        }
+    }
 
-            let workbook;
-            try {
-                workbook = XLSX.read(buffer, { type: 'array' });
-            } catch (e) {
-                console.error('✗ Error leyendo el workbook con SheetJS:', e);
-                throw new Error('SheetJS no pudo leer el archivo: ' + (e.message || e));
+    /**
+     * Cargar datos desde un archivo Excel elegido por el usuario (sin servidor)
+     * @param {File} file
+     */
+    async loadFromFile(file) {
+        this.lastError = null;
+        try {
+            return this.loadFromBuffer(await file.arrayBuffer());
+        } catch (error) {
+            console.error('✗ Error al leer el archivo seleccionado:', error);
+            this.lastError = error;
+            return false;
+        }
+    }
+
+    /**
+     * Procesar el contenido binario del libro Excel
+     */
+    loadFromBuffer(buffer) {
+        let workbook;
+        try {
+            workbook = XLSX.read(buffer, { type: 'array' });
+        } catch (e) {
+            console.error('✗ Error leyendo el workbook con SheetJS:', e);
+            throw new Error('SheetJS no pudo leer el archivo: ' + (e.message || e));
+        }
+
+        console.log('📑 Hojas detectadas:', workbook.SheetNames);
+
+        this.rawData = [];
+
+        // La fuente oficial para el dashboard es exclusivamente la hoja CONSOLIDADO.
+        const sheetsToProcess = ['CONSOLIDADO', 'Hoja1'].filter(
+            name => workbook.SheetNames.includes(name)
+        ).slice(0, 1);
+
+        sheetsToProcess.forEach((sheetName, index) => {
+            const exists = workbook.SheetNames.includes(sheetName);
+            if (!exists) {
+                console.warn(`⚠ Hoja no encontrada: ${sheetName}`);
+                return;
             }
 
-            console.log('📑 Hojas detectadas:', workbook.SheetNames);
+            const worksheet = workbook.Sheets[sheetName];
+            const allData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+            this.columnMapping[sheetName] = this.createConsolidadoMapping(
+                Object.keys(allData[0] || {})
+            );
+            console.log(`📄 Hoja '${sheetName}' - filas totales en Excel: ${allData.length}`);
 
-            this.rawData = [];
-
-            // La fuente oficial para el dashboard es exclusivamente la hoja CONSOLIDADO.
-            const sheetsToProcess = ['CONSOLIDADO', 'Hoja1'].filter(
-                name => workbook.SheetNames.includes(name)
-            ).slice(0, 1);
-
-            sheetsToProcess.forEach((sheetName, index) => {
-                const exists = workbook.SheetNames.includes(sheetName);
-                if (!exists) {
-                    console.warn(`⚠ Hoja no encontrada: ${sheetName}`);
-                    return;
-                }
-
-                const worksheet = workbook.Sheets[sheetName];
-                const allData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-                this.columnMapping[sheetName] = this.createConsolidadoMapping(
-                    Object.keys(allData[0] || {})
-                );
-                console.log(`📄 Hoja '${sheetName}' - filas totales en Excel: ${allData.length}`);
-
-                // Filtrar filas completamente vacías (sin datos en columnas clave)
-                const data = allData.filter(row => {
-                    return this.keyColumns.some(key => {
-                        const mapping = this.columnMapping[sheetName];
-                        const excelCol = mapping[key];
-                        const val = row[excelCol];
-                        return val !== undefined && val !== null && String(val).trim() !== '';
-                    });
-                });
-
-                console.log(`📄 Hoja '${sheetName}' - filas con datos reales: ${data.length} (filtradas ${allData.length - data.length} vacías)`);
-
-                if (data.length > 0) {
-                    console.log('📌 Ejemplo fila:', JSON.stringify(data[0]).substring(0, 300));
-                    console.log('🔤 Encabezados Excel:', Object.keys(data[0]));
-                }
-
-                // Procesar registros
-                data.forEach((row, rowIndex) => {
-                    const record = this.normalizeRecord(row, sheetName, index);
-
-                    // Si no tiene código, generamos uno
-                    if (!record.codigo || String(record.codigo).trim() === '') {
-                        const shortSheet = sheetName.replace(/\s+/g, '').substring(0, 8);
-                        record.codigo = `GEN-${shortSheet}-${index + 1}-${rowIndex + 1}`;
-                        record._generatedCodigo = true;
-                    }
-
-                    record.origen = index === 0 ? 'SIG' : 'Aseguramiento';
-                    this.rawData.push(record);
+            // Filtrar filas completamente vacías (sin datos en columnas clave)
+            const data = allData.filter(row => {
+                return this.keyColumns.some(key => {
+                    const mapping = this.columnMapping[sheetName];
+                    const excelCol = mapping[key];
+                    const val = row[excelCol];
+                    return val !== undefined && val !== null && String(val).trim() !== '';
                 });
             });
 
-            // Consolidar y procesar datos
-            this.consolidateData();
-            console.log(`✓ Registros totales válidos: ${this.rawData.length}`);
-            console.log(`✓ Datos consolidados: ${this.consolidatedData.length} registros`);
-            return true;
-        } catch (error) {
-            console.error('✗ Error al cargar Excel:', error);
-            alert('Error al cargar el archivo Excel. Verifica que esté en /data/CONSOLIDADO HALLAZGOS AUDITORÍA 2026.xlsx');
-            return false;
+            console.log(`📄 Hoja '${sheetName}' - filas con datos reales: ${data.length} (filtradas ${allData.length - data.length} vacías)`);
+
+            if (data.length > 0) {
+                console.log('📌 Ejemplo fila:', JSON.stringify(data[0]).substring(0, 300));
+                console.log('🔤 Encabezados Excel:', Object.keys(data[0]));
+            }
+
+            // Procesar registros
+            data.forEach((row, rowIndex) => {
+                const record = this.normalizeRecord(row, sheetName, index);
+
+                // Si no tiene código, generamos uno
+                if (!record.codigo || String(record.codigo).trim() === '') {
+                    const shortSheet = sheetName.replace(/\s+/g, '').substring(0, 8);
+                    record.codigo = `GEN-${shortSheet}-${index + 1}-${rowIndex + 1}`;
+                    record._generatedCodigo = true;
+                }
+
+                record.origen = index === 0 ? 'SIG' : 'Aseguramiento';
+                this.rawData.push(record);
+            });
+        });
+
+        if (this.rawData.length === 0) {
+            throw new Error('El archivo no tiene la hoja CONSOLIDADO con registros.');
         }
+
+        // Consolidar y procesar datos
+        this.consolidateData();
+        console.log(`✓ Registros totales válidos: ${this.rawData.length}`);
+        console.log(`✓ Datos consolidados: ${this.consolidatedData.length} registros`);
+        return true;
     }
 
     /**

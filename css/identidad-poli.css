@@ -93,6 +93,12 @@ h4, h5, h6, .h4, .h5, .h6 { color: var(--poli-navy); text-wrap: balance; }
     height: auto;
     padding: 0.35rem 0.6rem 0.35rem 0; /* zona de seguridad del logo */
 }
+.navbar-sello {
+    /* Sello de acreditación a la derecha del logo, como en la plantilla oficial */
+    display: block;
+    height: 26px;
+    width: auto;
+}
 .navbar-divider {
     width: 1px;
     align-self: stretch;
@@ -126,6 +132,8 @@ h4, h5, h6, .h4, .h5, .h6 { color: var(--poli-navy); text-wrap: balance; }
 }
 .btn-outline-secondary { color: var(--poli-navy); border-color: var(--poli-line); }
 .btn-outline-secondary:hover { background: var(--poli-navy); border-color: var(--poli-navy); color: #fff; }
+.btn-primary { background: var(--poli-navy); border-color: var(--poli-navy); color: #fff; }
+.btn-primary:hover, .btn-primary:focus-visible { background: var(--poli-azul); border-color: var(--poli-azul); color: var(--poli-navy); }
 .btn-outline-primary { color: var(--poli-navy); border-color: var(--poli-azul); }
 .btn-outline-primary:hover { background: var(--poli-azul); border-color: var(--poli-azul); color: var(--poli-navy); }
 :focus-visible { outline: 2px solid var(--poli-azul); outline-offset: 2px; }
@@ -274,6 +282,7 @@ footer .container-fluid {
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
     .navbar-logo { width: 110px; }
+    .navbar-sello { height: 22px; }
     .navbar-divider { display: none; }
     .navbar-toolbar { margin-left: 0 !important; }
     .explorer-layout { grid-template-columns: minmax(0, 1fr); }
