@@ -1,0 +1,285 @@
+/* =====================================================
+   CAPA DE IDENTIDAD POLI (Manual de Marca)
+   Layout: barra navy con logo arriba-izquierda y curva "cinta" del pictograma,
+   filtros pegajosos, KPIs por categoría, tarjetas blancas sobre gris frío.
+   ===================================================== */
+:root {
+    color-scheme: light;
+    /* Paleta principal / secundaria del manual */
+    --poli-navy: #263A58;
+    --poli-navy-deep: #1B2A41;
+    --poli-azul: #22B2DE;
+    --poli-cian: #15BECE;
+    /* Acentos puntuales (codifican categoría o estado, nunca dominantes) */
+    --poli-dorado: #F7B400;
+    --poli-magenta: #E4006D;
+    --poli-lima: #B1C900;
+    /* Neutros con sesgo hacia el navy */
+    --poli-bg: #EEF1F5;
+    --poli-surface: #FFFFFF;
+    --poli-line: #DCE2EA;
+    --poli-ink: #263A58;
+    --poli-ink-soft: #55657D;
+    --poli-ink-faint: #8A97AA;
+    --poli-azul-tint: #E6F6FB;
+    --poli-magenta-tint: #FDE6F0;
+    --poli-dorado-tint: #FEF5D9;
+    --poli-lima-tint: #F4F8D6;
+    --poli-lima-ink: #5E6B00;
+
+    --font-poli: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+    /* Re-mapear tokens del proyecto a marca */
+    --color-primary: var(--poli-navy);
+    --color-primary-dark: var(--poli-navy-deep);
+    --color-primary-light: var(--poli-azul);
+    --color-warning: var(--poli-dorado);
+    --color-danger: var(--poli-magenta);
+    --gray-700: var(--poli-ink);
+    --gray-800: var(--poli-ink);
+    --gray-600: var(--poli-ink-soft);
+    --gray-500: var(--poli-ink-soft);
+    --gray-400: var(--poli-ink-faint);
+    --gray-200: var(--poli-line);
+    --gray-100: #E8ECF2;
+
+    --bs-body-font-family: var(--font-poli);
+    --bs-primary: var(--poli-navy);
+    --bs-primary-rgb: 38, 58, 88;
+    --bs-link-color: var(--poli-navy);
+}
+
+body {
+    font-family: var(--font-poli);
+    background: var(--poli-bg);
+    color: var(--poli-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+h4, h5, h6, .h4, .h5, .h6 { color: var(--poli-navy); text-wrap: balance; }
+.text-dark-emphasis { color: var(--poli-navy) !important; }
+.text-primary { color: var(--poli-azul) !important; }
+.text-warning { color: var(--poli-dorado) !important; }
+.text-danger { color: var(--poli-magenta) !important; }
+.text-muted { color: var(--poli-ink-soft) !important; }
+.container-fluid.px-4 {
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+}
+
+/* ---------- Barra superior con logo ---------- */
+.navbar {
+    background: var(--poli-navy) !important;
+    box-shadow: none;
+    padding-block: 0.9rem;
+}
+.navbar::before {
+    /* Curvas de la "cinta" del pictograma */
+    background:
+        radial-gradient(120% 220% at 108% 120%, transparent 54%, rgba(34, 178, 222, 0.55) 54.4%, rgba(34, 178, 222, 0.55) 55.6%, transparent 56%),
+        radial-gradient(120% 220% at 112% 130%, transparent 60%, rgba(255, 255, 255, 0.18) 60.3%, rgba(255, 255, 255, 0.18) 61%, transparent 61.3%);
+}
+.navbar::after { height: 4px; background: var(--poli-azul); }
+.navbar .container-fluid {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.navbar-identity { gap: 1.1rem; }
+.navbar-logo {
+    display: block;
+    width: 132px;
+    height: auto;
+    padding: 0.35rem 0.6rem 0.35rem 0; /* zona de seguridad del logo */
+}
+.navbar-divider {
+    width: 1px;
+    align-self: stretch;
+    background: rgba(255, 255, 255, 0.28);
+}
+.navbar-brand-icon { display: none; }
+.navbar-brand {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.navbar-subtitle { color: rgba(255, 255, 255, 0.75); font-size: 0.74rem; }
+.navbar-toolbar { background: transparent; border-color: rgba(255, 255, 255, 0.22); }
+.navbar .btn-outline-light { font-family: var(--font-poli); }
+.navbar .btn-outline-light:hover,
+.navbar .btn-outline-light:focus-visible { background: var(--poli-azul); border-color: var(--poli-azul); color: var(--poli-navy); }
+
+/* ---------- Filtros ---------- */
+.filter-panel {
+    border: 1px solid var(--poli-line);
+    border-top: 3px solid var(--poli-azul);
+    box-shadow: 0 6px 18px rgba(38, 58, 88, 0.08);
+}
+.filter-panel h5 { color: var(--poli-navy); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; }
+.form-label { color: var(--poli-ink-soft); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.68rem !important; }
+.form-select-sm, .form-control-sm { border-color: var(--poli-line); color: var(--poli-ink); font-family: var(--font-poli); }
+.form-select-sm:focus, .form-control:focus, .form-select:focus {
+    border-color: var(--poli-azul);
+    box-shadow: 0 0 0 3px rgba(34, 178, 222, 0.2);
+}
+.btn-outline-secondary { color: var(--poli-navy); border-color: var(--poli-line); }
+.btn-outline-secondary:hover { background: var(--poli-navy); border-color: var(--poli-navy); color: #fff; }
+.btn-outline-primary { color: var(--poli-navy); border-color: var(--poli-azul); }
+.btn-outline-primary:hover { background: var(--poli-azul); border-color: var(--poli-azul); color: var(--poli-navy); }
+:focus-visible { outline: 2px solid var(--poli-azul); outline-offset: 2px; }
+
+/* ---------- Pestañas ---------- */
+.nav-tabs { border-bottom: 2px solid var(--poli-line); gap: 0.25rem; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.nav-tabs .nav-link { color: var(--poli-ink-soft); white-space: nowrap; font-size: 0.78rem; letter-spacing: 0.06em; }
+.nav-tabs .nav-link:hover { color: var(--poli-navy); border-bottom-color: var(--poli-azul); }
+.nav-tabs .nav-link.active { color: var(--poli-navy); border-bottom: 3px solid var(--poli-azul); }
+
+/* ---------- KPIs por categoría ----------
+   Los colores de las tarjetas y categorías (#07355A, #FCB21C, #EE0000, #7EBC2C, #C00000)
+   se conservan tal como están en styles.css por decisión del usuario. */
+.kpi-label { letter-spacing: 0.06em; }
+
+/* ---------- Tarjetas y gráficos ---------- */
+.chart-card, .card, .explorer-selector, .explorer-detail {
+    border: 1px solid var(--poli-line);
+    box-shadow: 0 2px 10px rgba(38, 58, 88, 0.05);
+}
+.chart-title {
+    color: var(--poli-navy);
+    border-bottom: 2px solid var(--poli-azul);
+    letter-spacing: 0.06em;
+    font-size: 0.78rem;
+}
+.card-header h6 { color: var(--poli-navy) !important; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.78rem; }
+
+/* ---------- Explorador ---------- */
+.explorer-active-filters { background: var(--poli-azul-tint); border-color: rgba(34, 178, 222, 0.45); }
+.explorer-filters-label, .explorer-filters-clear, .explorer-filter-chip-label { color: var(--poli-navy); }
+.explorer-filter-chip { border-color: rgba(34, 178, 222, 0.6); color: var(--poli-navy); }
+.explorer-filter-chip-remove { background: var(--poli-azul-tint); color: var(--poli-navy); }
+.explorer-filter-chip-remove:hover, .explorer-filter-chip-remove:focus-visible { background: var(--poli-navy); color: #fff; }
+.explorer-group-title { color: var(--poli-navy); }
+.explorer-group-title i, .explorer-record-meta i { color: var(--poli-azul); }
+.explorer-item { color: var(--poli-ink); }
+.explorer-item:hover, .explorer-item:focus-visible, .explorer-record:hover, .explorer-record:focus-visible { background: var(--poli-azul-tint); color: var(--poli-navy); }
+.explorer-item strong, .explorer-detail-heading > strong { color: var(--poli-navy); background: var(--poli-azul-tint); }
+.explorer-item.is-selected { background: var(--poli-navy); box-shadow: inset 3px 0 0 var(--poli-azul); }
+.explorer-record:hover, .explorer-record:focus-visible { border-color: var(--poli-azul); box-shadow: 0 6px 16px rgba(34, 178, 222, 0.15); }
+.explorer-record-title, .explorer-detail-heading h5, .explorer-field p { color: var(--poli-navy); }
+.explorer-record-meta, .explorer-record-excerpt { color: var(--poli-ink-soft); }
+.explorer-field { background: #F5F7FA; border-left-color: var(--poli-azul); }
+.explorer-field span { color: var(--poli-ink-soft); }
+
+
+/* ---------- Tabla de seguimiento ---------- */
+#tablaSeguimientoDetallado thead th,
+#tablaTop10 thead th {
+    background: var(--poli-navy);
+    color: #fff;
+    border-bottom: 0;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+#tablaSeguimientoDetallado tbody tr:nth-child(even) { background-color: #F5F7FA; }
+#tablaSeguimientoDetallado tbody tr:hover { background-color: var(--poli-azul-tint) !important; box-shadow: inset 3px 0 0 var(--poli-azul); }
+#tablaSeguimientoDetallado td { color: var(--poli-ink); }
+.cond-col { background: #F5F7FA !important; }
+.btn-save-diligencia { border-color: var(--poli-azul); color: var(--poli-navy); }
+.btn-save-diligencia:hover:not(:disabled) { background: var(--poli-azul); color: var(--poli-navy); }
+.btn-save-diligencia.saved { background: var(--poli-lima); border-color: var(--poli-lima); color: var(--poli-navy); }
+.btn-save-diligencia.error { background: var(--poli-magenta); border-color: var(--poli-magenta); color: #fff; }
+.page-link { color: var(--poli-navy); border-color: var(--poli-line); }
+.page-link:hover { background: var(--poli-azul); border-color: var(--poli-azul); color: var(--poli-navy); }
+.page-item.active .page-link { background: var(--poli-navy); border-color: var(--poli-navy); box-shadow: none; color: #fff; }
+.progress-bar.bg-primary, .progress-bar { background-color: var(--poli-azul) !important; }
+.progress-bar.bg-success { background-color: var(--poli-lima) !important; }
+.progress-bar.bg-secondary { background-color: var(--poli-ink-faint) !important; }
+
+/* Estados */
+.estado-abierto { background: var(--poli-azul-tint); color: var(--poli-navy); }
+.estado-abierto::before { background: var(--poli-azul); }
+.estado-ejecucion { background: var(--poli-dorado-tint); color: #7A5900; }
+.estado-ejecucion::before { background: var(--poli-dorado); }
+.estado-cerrado { background: var(--poli-lima-tint); color: var(--poli-lima-ink); }
+.estado-cerrado::before { background: var(--poli-lima); }
+.estado-vencido { background: var(--poli-magenta-tint); color: #A3004E; }
+.estado-vencido::before { background: var(--poli-magenta); }
+.criticidad-alto { color: var(--poli-magenta); }
+.criticidad-medio { color: #A87A00; }
+.criticidad-bajo { color: var(--poli-ink-soft); }
+.badge.bg-primary { background: var(--poli-navy) !important; }
+.badge.bg-secondary { background: var(--poli-ink-faint) !important; }
+.badge.bg-danger { background: var(--poli-magenta) !important; }
+
+/* ---------- Gestión operativa ---------- */
+.semaforo-item { background: #F5F7FA; }
+.semaforo-rojo { border-left-color: var(--poli-magenta); }
+.semaforo-naranja { border-left-color: var(--poli-dorado); }
+.semaforo-verde { border-left-color: var(--poli-azul); }
+.semaforo-azul { border-left-color: var(--poli-lima); }
+.semaforo-gris { border-left-color: var(--poli-ink-faint); }
+.semaforo-lila { border-left-color: var(--poli-navy); }
+.semaforo-rojo .semaforo-dot { background: var(--poli-magenta) !important; }
+.semaforo-naranja .semaforo-dot { background: var(--poli-dorado) !important; }
+.semaforo-verde .semaforo-dot { background: var(--poli-azul) !important; }
+.semaforo-azul .semaforo-dot { background: var(--poli-lima) !important; }
+.semaforo-gris .semaforo-dot { background: var(--poli-ink-faint) !important; }
+.semaforo-lila .semaforo-dot { background: var(--poli-navy) !important; }
+.semaforo-rojo .semaforo-valor { color: var(--poli-magenta); }
+.semaforo-naranja .semaforo-valor { color: #A87A00; }
+.semaforo-verde .semaforo-valor { color: #1688AB; }
+.semaforo-azul .semaforo-valor { color: var(--poli-lima-ink); }
+.semaforo-gris .semaforo-valor { color: var(--poli-ink-soft); }
+.semaforo-lila .semaforo-valor { color: var(--poli-navy); }
+.semaforo-label { color: var(--poli-ink); }
+
+.alerta-item { background: var(--poli-dorado-tint); border-left-color: var(--poli-dorado); }
+.alerta-item.alerta-critica { background: var(--poli-magenta-tint); border-left-color: var(--poli-magenta); }
+.alerta-item.alerta-critica .alerta-icon { color: var(--poli-magenta); }
+.alerta-item.alerta-info { background: var(--poli-azul-tint); border-left-color: var(--poli-azul); }
+.alerta-item.alerta-ok { background: var(--poli-lima-tint); border-left-color: var(--poli-lima); }
+.alerta-texto strong { color: var(--poli-navy); }
+.alerta-texto .alerta-detalle { color: var(--poli-ink-soft); }
+
+.riesgo-card { border-color: var(--poli-line); }
+.riesgo-card.riesgo-alto { border-left: 4px solid var(--poli-magenta); }
+.riesgo-card.riesgo-medio { border-left: 4px solid var(--poli-dorado); }
+.riesgo-card.riesgo-bajo { border-left: 4px solid var(--poli-azul); }
+.riesgo-nombre { color: var(--poli-navy); }
+.riesgo-badge-alto { background: var(--poli-magenta-tint); color: #A3004E; }
+.riesgo-badge-medio { background: var(--poli-dorado-tint); color: #7A5900; }
+.riesgo-badge-bajo { background: var(--poli-azul-tint); color: var(--poli-navy); }
+.riesgo-stats { color: var(--poli-ink-soft); }
+.reincidencia-valor { color: var(--poli-navy); }
+.reincidencia-pct { color: var(--poli-magenta); }
+
+/* ---------- Panel de detalle ---------- */
+.detail-header-bar { background: var(--poli-navy); border-bottom: 4px solid var(--poli-azul); }
+.detail-section-title { color: var(--poli-navy); border-bottom-color: var(--poli-azul); }
+.detail-badge-alto { background: var(--poli-magenta-tint); color: #A3004E; }
+.detail-badge-medio { background: var(--poli-dorado-tint); color: #7A5900; }
+.detail-badge-bajo { background: var(--poli-azul-tint); color: var(--poli-navy); }
+.detail-field-value, .timeline-label { color: var(--poli-navy); }
+
+/* ---------- Pie ---------- */
+footer.bg-dark { background: var(--poli-navy) !important; border-top: 4px solid var(--poli-azul); color: rgba(255, 255, 255, 0.72) !important; }
+footer .container-fluid {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .navbar-logo { width: 110px; }
+    .navbar-divider { display: none; }
+    .navbar-toolbar { margin-left: 0 !important; }
+    .explorer-layout { grid-template-columns: minmax(0, 1fr); }
+    .executive-kpis .col-xl { min-width: 150px; }
+    .filter-panel .col-xl { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

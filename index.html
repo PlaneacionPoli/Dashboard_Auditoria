@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auditoría Interna 2026 - Resultados ejecutivos</title>
     
-    <!-- Google Fonts - Inter -->
+    <!-- Google Fonts - Montserrat (Manual de Marca POLI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,6 +22,10 @@
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.font.family = "'Montserrat', 'Segoe UI', system-ui, sans-serif";
+        Chart.defaults.color = '#55657D';
+    </script>
     
     <!-- SheetJS para lectura de Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -31,13 +35,16 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css?v=20260826f">
+    <!-- Capa de identidad POLI (Manual de Marca) -->
+    <link rel="stylesheet" href="css/identidad-poli.css?v=20261030">
 </head>
 <body>
     <!-- Navbar Principal -->
     <nav class="navbar navbar-dark navbar-expand-lg bg-gradient mb-4">
         <div class="container-fluid">
             <div class="navbar-identity">
-                <span class="navbar-brand-icon"><i class="fas fa-clipboard-check"></i></span>
+                <img class="navbar-logo" src="img/logo_poli_blanco.png" alt="Politécnico Grancolombiano">
+                <span class="navbar-divider" aria-hidden="true"></span>
                 <div class="navbar-brand-text">
                     <span class="navbar-brand mb-0">Control Interno</span>
                     <small class="navbar-subtitle">Sistema de gestión y seguimiento de hallazgos</small>
@@ -434,9 +441,9 @@
     <!-- Custom Scripts -->
     <script src="js/dataManager.js?v=20260828"></script>
     <script src="js/diligenciaService.js?v=20260828"></script>
-    <script src="js/dashboard.js?v=20260828"></script>
+    <script src="js/dashboard.js?v=20261030"></script>
     <script src="js/filters.js?v=20260828"></script>
     <script src="js/exports.js?v=20260828"></script>
-    <script src="js/app.js?v=20260828"></script>
+    <script src="js/app.js?v=20261030"></script>
 </body>
 </html>

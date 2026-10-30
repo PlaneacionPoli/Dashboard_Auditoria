@@ -43,6 +43,10 @@ class Application {
             // Paso 5: Inicializar dashboard
             console.log('📊 Inicializando dashboard...');
             dashboard.init();
+            // Recalcular gráficos cuando cargue Montserrat para que las etiquetas no se recorten
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(() => Object.values(dashboard.charts).forEach(chart => chart.update()));
+            }
 
             // Paso 6: Inicializar exportaciones
             console.log('💾 Inicializando exportaciones...');

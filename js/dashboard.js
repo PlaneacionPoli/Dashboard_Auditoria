@@ -146,7 +146,7 @@ class Dashboard {
                         grid: { display: false },
                         ticks: {
                             font: { size: 11, weight: '600' },
-                            color: '#374151'
+                            color: '#263A58'
                         }
                     }
                 }
@@ -163,7 +163,7 @@ class Dashboard {
                             const value = dataset.data[index];
                             const text = String(value);
                             ctx.save();
-                            ctx.font = 'bold 12px Segoe UI';
+                            ctx.font = '700 12px Montserrat, Segoe UI, sans-serif';
                             ctx.textBaseline = 'middle';
                             const barWidth = bar.x - baseX;
                             const textWidth = ctx.measureText(text).width;
@@ -174,7 +174,7 @@ class Dashboard {
                                 ctx.fillText(text, baseX + barWidth / 2, bar.y);
                             } else {
                                 // Barra pequeña: afuera a la derecha en oscuro
-                                ctx.fillStyle = '#333';
+                                ctx.fillStyle = '#263A58';
                                 ctx.textAlign = 'left';
                                 ctx.fillText(text, bar.x + 5, bar.y);
                             }
@@ -202,16 +202,15 @@ class Dashboard {
             .sort((a, b) => b.count - a.count)
             .slice(0, 10);
 
-        const labels = pairs.map(p => p.label.length > 35 ? p.label.substring(0, 35) + '...' : p.label);
+        // Montserrat es más ancha: se acorta la etiqueta del eje y el nombre completo va en el tooltip
+        const labels = pairs.map(p => p.label.length > 24 ? p.label.substring(0, 23).trim() + '…' : p.label);
         const values = pairs.map(p => p.count);
+        // Escala de azules del Manual de Marca POLI (navy -> azul claro -> cian)
         const subprocesoColors = [
-            '#07355A', '#2563EB', '#7EBC2C', '#FCB21C', '#DB2777',
-            '#0F766E', '#7C3AED', '#0891B2', '#EA580C', '#475569'
+            '#263A58', '#2A4A6C', '#2D5A80', '#306B94', '#2F7CA8',
+            '#2C8DBC', '#279ECF', '#22B2DE', '#1BB8D6', '#15BECE'
         ];
-        const subprocesoHoverColors = [
-            '#052944', '#1D4ED8', '#5E921F', '#D99300', '#9D174D',
-            '#0A5C54', '#5B21B6', '#0E7490', '#C2410C', '#334155'
-        ];
+        const subprocesoHoverColors = subprocesoColors.map(() => '#1B2A41');
 
         const ctx = document.getElementById('chartProcesos').getContext('2d');
 
@@ -244,6 +243,9 @@ class Dashboard {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
+                            title: function(items) {
+                                return items.length ? pairs[items[0].dataIndex].label : '';
+                            },
                             label: function(context) {
                                 return `Hallazgos: ${context.parsed.x}`;
                             }
@@ -253,7 +255,7 @@ class Dashboard {
                         display: true,
                         anchor: 'end',
                         align: 'end',
-                        color: '#333',
+                        color: '#263A58',
                         font: { weight: 'bold', size: 12 },
                         formatter: function(value) { return value; }
                     }
@@ -268,7 +270,7 @@ class Dashboard {
                         grid: { display: false },
                         ticks: {
                             font: { size: 11, weight: '600' },
-                            color: '#374151'
+                            color: '#263A58'
                         }
                     }
                 }
@@ -281,8 +283,8 @@ class Dashboard {
                         const meta = chart.getDatasetMeta(datasetIndex);
                         meta.data.forEach(function(bar, index) {
                             const value = dataset.data[index];
-                            ctx.fillStyle = '#333';
-                            ctx.font = 'bold 12px Segoe UI';
+                            ctx.fillStyle = '#263A58';
+                            ctx.font = '700 12px Montserrat, Segoe UI, sans-serif';
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'middle';
                             ctx.fillText(value, bar.x + 5, bar.y);
@@ -964,19 +966,19 @@ class Dashboard {
 
         // Estado con color
         const estadoColor = {
-            'Abierto': '#0d47a1',
-            'En ejecución': '#e65100',
-            'Cerrado': '#1b5e20',
-            'Vencido': '#b71c1c'
-        }[record.estado] || '#6c757d';
+            'Abierto': '#263A58',
+            'En ejecución': '#A87A00',
+            'Cerrado': '#5E6B00',
+            'Vencido': '#E4006D'
+        }[record.estado] || '#8A97AA';
 
         // Semáforo
         const semaforoColor = {
-            'Vencido': '#dc3545',
-            'Próximo a vencer': '#ffc107',
-            'En término': '#28a745',
-            'Cerrado': '#198754'
-        }[record.semaforo] || '#6c757d';
+            'Vencido': '#E4006D',
+            'Próximo a vencer': '#F7B400',
+            'En término': '#22B2DE',
+            'Cerrado': '#B1C900'
+        }[record.semaforo] || '#8A97AA';
 
         // Línea de tiempo
         const timeline = this.buildTimeline(record);
@@ -1208,11 +1210,11 @@ class Dashboard {
      */
     buildTimeline(record) {
         const fechas = [
-            { label: 'Detección', value: record.fecha_deteccion, color: '#28a745' },
-            { label: 'Último seguimiento', value: record.fecha_ultimo_seguimiento, color: '#6c757d' },
-            { label: 'Compromiso', value: record.fecha_compromiso, color: '#0d47a1' },
-            { label: 'Implementación real', value: record.fecha_implementacion, color: '#e65100' },
-            { label: 'Cierre oficial', value: record.fecha_cierre, color: '#1b5e20' }
+            { label: 'Detección', value: record.fecha_deteccion, color: '#22B2DE' },
+            { label: 'Último seguimiento', value: record.fecha_ultimo_seguimiento, color: '#8A97AA' },
+            { label: 'Compromiso', value: record.fecha_compromiso, color: '#263A58' },
+            { label: 'Implementación real', value: record.fecha_implementacion, color: '#A87A00' },
+            { label: 'Cierre oficial', value: record.fecha_cierre, color: '#5E6B00' }
         ];
 
         let html = '<div class="detail-timeline">';
