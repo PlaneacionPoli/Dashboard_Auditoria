@@ -406,20 +406,15 @@ class DataManager {
         // Las fortalezas no requieren definir acciones
         if (!this.requiereAccion(record)) return 'No aplica';
 
-        // Si ya tiene un estado Automático válido
-        const estado = String(record.estado_automatico || '').toLowerCase();
-        if (estado.includes('cerrado')) return 'Cerrado';
-        if (estado.includes('vencido')) return 'Vencido';
-        if (estado.includes('ejecución') || estado.includes('execution')) return 'En ejecución';
-        if (estado.includes('abierto')) return 'Abierto';
+        // Momento 2: la validación de auditoría decide el cierre
+        const resultado = String(record.resultado_validacion || '').trim();
+        if (resultado === 'Eficaz') return 'Cerrado';
+        if (resultado === 'No eficaz' || resultado === 'Parcialmente eficaz') return 'Requiere ajuste';
 
-        // Determinar por lógica de negocio
-        const avance = record.avance_porcentaje || 0;
-        const diasVencidos = this.calculateDaysOverdue(record.fecha_compromiso);
-
-        if (avance >= 100) return 'Cerrado';
-        if (diasVencidos > 0) return 'Vencido';
-        if (avance > 0) return 'En ejecución';
+        // Momento 1: avance de la acción registrada por el proceso
+        const avance = Number(record.avance_porcentaje) || 0;
+        if (avance >= 100) return 'Pendiente revisión';
+        if (record.tipo_accion) return 'En ejecución';
         return 'Abierto';
     }
 
@@ -437,6 +432,8 @@ class DataManager {
     calculateTrafficLight(record) {
         if (record.estado === 'No aplica') return 'No aplica';
         if (record.estado === 'Cerrado') return 'Cerrado';
+        // Sin fecha de compromiso no hay plazo que medir: se muestra el estado
+        if (!record.fecha_compromiso) return record.estado;
         const diasVencidos = this.calculateDaysOverdue(record.fecha_compromiso);
         if (diasVencidos > 0) return 'Vencido';
         if (diasVencidos > -5) return 'Próximo a vencer';

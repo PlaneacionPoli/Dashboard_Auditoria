@@ -252,6 +252,10 @@ h4, h5, h6, .h4, .h5, .h6 { color: var(--poli-navy); text-wrap: balance; }
 .seg-avance .progress { flex: 1; height: 6px; min-width: 50px; }
 .seg-avance span { font-weight: 700; font-size: 0.78rem; color: var(--poli-navy); }
 
+.estado-pendiente { background: var(--poli-navy); color: #fff; }
+.estado-pendiente::before { background: var(--poli-azul); }
+.estado-ajuste { background: var(--poli-magenta-tint); color: #A3004E; }
+.estado-ajuste::before { background: var(--poli-magenta); }
 .estado-noaplica { background: #EEF1F5; color: var(--poli-ink-soft); }
 .estado-noaplica::before { background: var(--poli-ink-faint); }
 .seg-no-aplica { color: var(--poli-ink-faint); font-size: 0.75rem; font-style: italic; white-space: normal; }

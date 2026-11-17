@@ -1375,6 +1375,8 @@ class Dashboard {
             'En ejecución': 'estado-ejecucion',
             'Cerrado': 'estado-cerrado',
             'Vencido': 'estado-vencido',
+            'Pendiente revisión': 'estado-pendiente',
+            'Requiere ajuste': 'estado-ajuste',
             'No aplica': 'estado-noaplica'
         };
         return 'estado-badge ' + (classes[estado] || 'estado-abierto');

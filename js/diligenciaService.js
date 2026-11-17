@@ -155,6 +155,11 @@ class DiligenciaService {
             if (saved.tipo_validacion       != null) record.tipo_validacion        = saved.tipo_validacion;
             if (saved.resultado_validacion  != null) record.resultado_validacion   = saved.resultado_validacion;
         });
+
+        // El estado y la prioridad dependen del avance y la validación recién fusionados
+        if (typeof dataManager !== 'undefined') {
+            records.forEach(record => dataManager.refreshRecordDerivedFields(record));
+        }
     }
 
     /**
