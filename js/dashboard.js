@@ -562,13 +562,39 @@ class Dashboard {
                 this.renderDetalladoTable();
             });
         }
+
+        // Filtros propios del seguimiento (categoría y estado)
+        const filtros = document.getElementById('segFiltros');
+        if (filtros && !filtros._bound) {
+            filtros._bound = true;
+            filtros.addEventListener('change', () => {
+                this.detalladoPage = 1;
+                this.renderDetalladoTable();
+            });
+        }
+    }
+
+    /**
+     * Categorías marcadas y estado elegido en los filtros del seguimiento.
+     * Por defecto: oportunidades de mejora, no conformidades y nuevos riesgos.
+     */
+    _filtrosSeguimiento() {
+        const marcadas = [...document.querySelectorAll('input[name="segCategoria"]:checked')].map(c => c.value);
+        const estado = document.getElementById('segFiltroEstado')?.value || '';
+        return { categorias: new Set(marcadas), estado };
     }
 
     renderDetalladoTable() {
-        const data = this._detalladoData || [];
+        const base = this._detalladoData || [];
         const tbody = document.getElementById('tbodyDetallado');
         if (!tbody) return;
         tbody.innerHTML = '';
+
+        const { categorias, estado } = this._filtrosSeguimiento();
+        const data = base.filter(item =>
+            categorias.has(String(item.categoria || '').trim()) &&
+            (!estado || item.estado === estado)
+        );
 
         // Filtro de búsqueda
         let filtered = data;
@@ -621,9 +647,11 @@ class Dashboard {
                 </td>
                 <td>${item.resultado_validacion ? this.escape(item.resultado_validacion) : '<span class="seg-vacio">—</span>'}</td>
                 <td class="seg-col-acciones">
-                    <button class="btn btn-sm btn-primary" type="button" data-seg-registrar="${idx}">
-                        <i class="fas fa-pen-to-square me-1"></i>${tipo ? 'Editar' : 'Registrar'}
-                    </button>
+                    ${dataManager.requiereAccion(item)
+                        ? `<button class="btn btn-sm btn-primary" type="button" data-seg-registrar="${idx}">
+                            <i class="fas fa-pen-to-square me-1"></i>${tipo ? 'Editar' : 'Registrar'}
+                        </button>`
+                        : '<span class="seg-no-aplica" title="Las fortalezas no requieren definir acciones">No requiere acción</span>'}
                     <button class="btn btn-sm btn-outline-primary" type="button" data-seg-detalle="${idx}" title="Ver ficha completa" aria-label="Ver ficha completa">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -644,7 +672,9 @@ class Dashboard {
 
         // Conteos
         const countEl = document.getElementById('totalRegistros');
-        if (countEl) countEl.textContent = `${data.length} registros`;
+        if (countEl) countEl.textContent = data.length === base.length
+            ? `${data.length} registros`
+            : `${data.length} de ${base.length} registros`;
         const infoEl = document.getElementById('detalladoInfo');
         if (infoEl) infoEl.textContent = total
             ? `Mostrando ${start + 1}–${Math.min(start + this.detalladoPerPage, total)} de ${total}${this.detalladoSearch ? ' (filtrado)' : ''}`
@@ -768,9 +798,12 @@ class Dashboard {
         const permisos = await diligenciaService.permisos();
         const record = this.currentData[this._segIdx];
         const tieneAccion = !!(record && record.tipo_accion);
+        const requiere = !record || dataManager.requiereAccion(record);
         const aplicar = (fieldsetId, botonId, avisoId, puede, mensajeSinPermiso, bloqueo) => {
             const aviso = document.getElementById(avisoId);
-            const mensaje = puede === false ? mensajeSinPermiso : bloqueo;
+            const mensaje = !requiere
+                ? 'Las fortalezas no requieren definir acciones ni validación.'
+                : (puede === false ? mensajeSinPermiso : bloqueo);
             document.getElementById(fieldsetId).disabled = !!mensaje;
             document.getElementById(botonId).disabled = !!mensaje;
             aviso.hidden = !mensaje;
@@ -1213,6 +1246,9 @@ class Dashboard {
             <button class="btn btn-sm btn-primary mt-2" type="button" data-bs-dismiss="offcanvas" onclick="dashboard.abrirSeguimiento(${index})">
                 <i class="fas fa-pen-to-square me-1"></i> ${tipo ? 'Editar seguimiento' : 'Registrar seguimiento'}
             </button>`;
+        if (!dataManager.requiereAccion(record)) {
+            return '<div class="detail-action-box text-muted">No aplica: las fortalezas no requieren definir acciones.</div>';
+        }
         if (!tipo) {
             return `<div class="detail-action-box text-muted">Sin seguimiento registrado.${boton}</div>`;
         }
@@ -1338,7 +1374,8 @@ class Dashboard {
             'Abierto': 'estado-abierto',
             'En ejecución': 'estado-ejecucion',
             'Cerrado': 'estado-cerrado',
-            'Vencido': 'estado-vencido'
+            'Vencido': 'estado-vencido',
+            'No aplica': 'estado-noaplica'
         };
         return 'estado-badge ' + (classes[estado] || 'estado-abierto');
     }

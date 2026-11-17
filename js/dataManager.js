@@ -403,6 +403,9 @@ class DataManager {
      * Determinar estado basado en los datos disponibles
      */
     determineState(record) {
+        // Las fortalezas no requieren definir acciones
+        if (!this.requiereAccion(record)) return 'No aplica';
+
         // Si ya tiene un estado Automático válido
         const estado = String(record.estado_automatico || '').toLowerCase();
         if (estado.includes('cerrado')) return 'Cerrado';
@@ -423,7 +426,16 @@ class DataManager {
     /**
      * Calcular semáforo de gestión
      */
+    /**
+     * Si el hallazgo requiere que el proceso defina una acción
+     * (las fortalezas no la requieren).
+     */
+    requiereAccion(record) {
+        return String(record.categoria || '').trim() !== 'Fortaleza';
+    }
+
     calculateTrafficLight(record) {
+        if (record.estado === 'No aplica') return 'No aplica';
         if (record.estado === 'Cerrado') return 'Cerrado';
         const diasVencidos = this.calculateDaysOverdue(record.fecha_compromiso);
         if (diasVencidos > 0) return 'Vencido';
@@ -703,7 +715,7 @@ class DataManager {
      * Prioridad: SIG primero, luego Aseguramiento, luego por score
      */
     getTopCritical(n = 10, data = null) {
-        const records = data || this.consolidatedData;
+        const records = (data || this.consolidatedData).filter(r => this.requiereAccion(r));
         return records
             .sort((a, b) => {
                 // SIG tiene prioridad sobre Aseguramiento
@@ -755,7 +767,8 @@ class DataManager {
      * Obtener datos del semáforo de gestión
      */
     getSemaforoData(data = null) {
-        const records = data || this.consolidatedData;
+        // Solo los hallazgos que requieren acción (las fortalezas no entran al semáforo)
+        const records = (data || this.consolidatedData).filter(r => this.requiereAccion(r));
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
 
@@ -822,7 +835,7 @@ class DataManager {
      * Obtener alertas automáticas
      */
     getAlertasAutomaticas(data = null) {
-        const records = data || this.consolidatedData;
+        const records = (data || this.consolidatedData).filter(r => this.requiereAccion(r));
         const alertas = [];
 
         const sinResponsable = records.filter(r =>

@@ -36,7 +36,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css?v=20260826f">
     <!-- Capa de identidad POLI (Manual de Marca) -->
-    <link rel="stylesheet" href="css/identidad-poli.css?v=20261113">
+    <link rel="stylesheet" href="css/identidad-poli.css?v=20261117">
 </head>
 <body>
     <!-- Navbar Principal -->
@@ -366,6 +366,27 @@
                         <input type="text" class="form-control form-control-sm" id="searchDetallado" placeholder="Buscar..." style="width: 180px; font-size: 0.8rem;">
                     </div>
                 </div>
+                <!-- Filtros propios del seguimiento: por defecto los hallazgos que requieren acción -->
+                <div class="seg-filtros" id="segFiltros">
+                    <fieldset class="seg-filtro-grupo">
+                        <legend>Categoría</legend>
+                        <label class="seg-check"><input type="checkbox" name="segCategoria" id="segCatMejora" value="Oportunidad de Mejora" checked> Oportunidad de mejora</label>
+                        <label class="seg-check"><input type="checkbox" name="segCategoria" id="segCatNoConformidad" value="No Conformidad" checked> No conformidad</label>
+                        <label class="seg-check"><input type="checkbox" name="segCategoria" id="segCatRiesgo" value="Nuevo Riesgo" checked> Nuevo riesgo</label>
+                        <label class="seg-check"><input type="checkbox" name="segCategoria" id="segCatFortaleza" value="Fortaleza"> Fortaleza</label>
+                    </fieldset>
+                    <div class="seg-filtro-grupo">
+                        <label for="segFiltroEstado">Estado</label>
+                        <select id="segFiltroEstado" class="form-select form-select-sm">
+                            <option value="">Todos los estados</option>
+                            <option value="Abierto">Abierto</option>
+                            <option value="En ejecución">En ejecución</option>
+                            <option value="Vencido">Vencido</option>
+                            <option value="Cerrado">Cerrado</option>
+                            <option value="No aplica">No aplica (fortalezas)</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table id="tablaSeguimientoDetallado" class="table table-hover mb-0">
@@ -511,9 +532,9 @@
     <script src="js/config.js" onerror="void 0"></script>
 
     <!-- Custom Scripts -->
-    <script src="js/dataManager.js?v=20261030b"></script>
+    <script src="js/dataManager.js?v=20261117"></script>
     <script src="js/diligenciaService.js?v=20260828"></script>
-    <script src="js/dashboard.js?v=20261113"></script>
+    <script src="js/dashboard.js?v=20261117"></script>
     <script src="js/filters.js?v=20260828"></script>
     <script src="js/exports.js?v=20260828"></script>
     <script src="js/app.js?v=20261030b"></script>
