@@ -570,65 +570,61 @@ class Dashboard {
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        // Filter by search
+        // Filtro de búsqueda
         let filtered = data;
         if (this.detalladoSearch) {
-            filtered = data.filter(item =>
-                (item.auditoria || '').toLowerCase().includes(this.detalladoSearch) ||
-                (item.subproceso || '').toLowerCase().includes(this.detalladoSearch) ||
-                (item.criticidad || '').toLowerCase().includes(this.detalladoSearch) ||
-                (item.descripcion || '').toLowerCase().includes(this.detalladoSearch) ||
-                (item.responsable_proceso || item.responsable_accion || '').toLowerCase().includes(this.detalladoSearch) ||
-                (item.estado || '').toLowerCase().includes(this.detalladoSearch)
-            );
+            const q = this.detalladoSearch;
+            filtered = data.filter(item => [
+                item.nombre, item.descripcion, item.proceso, item.subproceso, item.categoria,
+                item.responsable_proceso, item.responsable_accion, item.estado, item.tipo_accion
+            ].some(v => String(v || '').toLowerCase().includes(q)));
         }
 
-        // Pagination
+        // Paginación
         const total = filtered.length;
         const totalPages = Math.ceil(total / this.detalladoPerPage) || 1;
         if (this.detalladoPage > totalPages) this.detalladoPage = totalPages;
         const start = (this.detalladoPage - 1) * this.detalladoPerPage;
         const pageData = filtered.slice(start, start + this.detalladoPerPage);
 
-        // Render rows
         pageData.forEach((item) => {
-            const idx = data.indexOf(item);
-            const estadoClass = this.getEstadoClass(item.estado);
-            const criticidadClass = this.getCriticidadClass(item.criticidad);
-            const desc = item.descripcion || '';
-            const descShort = desc.length > 50 ? desc.substring(0, 50) + '...' : desc;
-            const tipoAccion = item.tipo_accion || '';
-            const avance = dataManager.getOmAvance(item, tipoAccion);
+            const idx = this.currentData.indexOf(item);
+            const tipo = item.tipo_accion || '';
+            const avance = dataManager.getOmAvance(item, tipo);
+            const actividad = dataManager.getOmActividad(item, tipo);
+            const actividadCorta = actividad.length > 140 ? `${actividad.substring(0, 140)}…` : actividad;
+            const responsable = item.responsable_proceso || item.responsable_accion || '';
 
             const row = document.createElement('tr');
-            row.style.cursor = 'pointer';
             row.innerHTML = `
-                <td>${this.escape(item.auditoria)}</td>
-                <td>${this.escape(item.subproceso || '')}</td>
-                <td><span class="${criticidadClass}">${this.escape(item.criticidad)}</span></td>
-                <td title="${this.escape(desc)}">${this.escape(descShort)}</td>
-                <td>${this.escape(item.responsable_proceso || item.responsable_accion || '')}</td>
-                <td><span class="${estadoClass}">${this.escape(item.estado)}</span></td>
-                <td>
-                    <select class="form-select form-select-sm tipo-accion-select" data-index="${idx}" onchange="dashboard.onTipoAccionChange(${idx}, this.value)">
-                        <option value="" ${!tipoAccion ? 'selected' : ''}>-- Selec. --</option>
-                        <option value="Acción Correctiva" ${tipoAccion === 'Acción Correctiva' ? 'selected' : ''}>Acción Correctiva</option>
-                        <option value="Corrección" ${tipoAccion === 'Corrección' ? 'selected' : ''}>Corrección</option>
-                        <option value="Acción de Mejora" ${tipoAccion === 'Acción de Mejora' ? 'selected' : ''}>Acción de Mejora</option>
-                    </select>
+                <td class="seg-col-hallazgo">
+                    <span class="explorer-category ${this.getCategoryClass(item.categoria)}">${this.escape(item.categoria || 'Sin categoría')}</span>
+                    <div class="seg-nombre">${this.escape(item.nombre || 'Hallazgo sin nombre')}</div>
+                    <div class="seg-desc">${this.escape(item.descripcion || '')}</div>
                 </td>
-                ${this.buildCondCells(idx, tipoAccion, item)}
-                <td>
-                    <div class="d-flex align-items-center gap-1">
-                        <div class="progress flex-grow-1" style="height: 6px; min-width: 40px;">
-                            <div class="progress-bar ${avance >= 100 ? 'bg-success' : avance > 0 ? 'bg-primary' : 'bg-secondary'}" style="width: ${avance}%"></div>
-                        </div>
-                        <small class="fw-semibold text-nowrap">${avance}%</small>
+                <td class="seg-col-proceso">
+                    <div class="seg-proc">${this.escape(item.proceso || '')}</div>
+                    <div class="seg-sub">${this.escape(item.subproceso || '')}</div>
+                    ${responsable ? `<div class="seg-resp"><i class="fas fa-user"></i> ${this.escape(responsable)}</div>` : ''}
+                </td>
+                <td><span class="${this.getEstadoClass(item.estado)}">${this.escape(item.estado)}</span></td>
+                <td class="seg-col-accion">
+                    ${tipo
+                        ? `<span class="seg-tipo">${this.escape(tipo)}</span>${actividadCorta ? `<div class="seg-om">${this.escape(actividadCorta)}</div>` : ''}`
+                        : '<span class="seg-vacio">Sin seguimiento</span>'}
+                </td>
+                <td class="seg-col-avance">
+                    <div class="seg-avance">
+                        <div class="progress"><div class="progress-bar ${avance >= 100 ? 'bg-success' : avance > 0 ? 'bg-primary' : 'bg-secondary'}" style="width: ${avance}%"></div></div>
+                        <span>${avance}%</span>
                     </div>
                 </td>
-                ${this.buildResultadoCell(idx, tipoAccion, item)}
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" data-index="${idx}" onclick="event.stopPropagation(); dashboard.showDetail(${idx})" title="Ver detalle">
+                <td>${item.resultado_validacion ? this.escape(item.resultado_validacion) : '<span class="seg-vacio">—</span>'}</td>
+                <td class="seg-col-acciones">
+                    <button class="btn btn-sm btn-primary" type="button" data-seg-registrar="${idx}">
+                        <i class="fas fa-pen-to-square me-1"></i>${tipo ? 'Editar' : 'Registrar'}
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" type="button" data-seg-detalle="${idx}" title="Ver ficha completa" aria-label="Ver ficha completa">
                         <i class="fas fa-eye"></i>
                     </button>
                 </td>
@@ -636,15 +632,24 @@ class Dashboard {
             tbody.appendChild(row);
         });
 
-        this.updateConditionalHeaders(data);
+        if (!tbody._bound) {
+            tbody._bound = true;
+            tbody.addEventListener('click', (event) => {
+                const registrar = event.target.closest('[data-seg-registrar]');
+                if (registrar) return this.abrirSeguimiento(Number(registrar.dataset.segRegistrar));
+                const detalle = event.target.closest('[data-seg-detalle]');
+                if (detalle) this.showDetail(Number(detalle.dataset.segDetalle));
+            });
+        }
 
-        // Update counts
+        // Conteos
         const countEl = document.getElementById('totalRegistros');
         if (countEl) countEl.textContent = `${data.length} registros`;
         const infoEl = document.getElementById('detalladoInfo');
-        if (infoEl) infoEl.textContent = `Mostrando ${start + 1}–${Math.min(start + this.detalladoPerPage, total)} de ${total}${this.detalladoSearch ? ' (filtrado)' : ''}`;
+        if (infoEl) infoEl.textContent = total
+            ? `Mostrando ${start + 1}–${Math.min(start + this.detalladoPerPage, total)} de ${total}${this.detalladoSearch ? ' (filtrado)' : ''}`
+            : 'Sin registros para mostrar';
 
-        // Render pagination
         this.renderDetalladoPagination(totalPages);
     }
 
@@ -683,118 +688,177 @@ class Dashboard {
     }
 
     /**
-     * Construir celdas condicionales según tipo de acción.
-     * Cada tipo muestra sus campos específicos + un botón fa-save al final.
-     * Column indices: 7=cond-ac, 8=cond-pct, 9=cond-val
+     * Formulario emergente de seguimiento (revisión de auditoría)
      */
-    /**
-     * Filas del textarea según longitud del texto (visualización completa)
-     */
-    _textareaRows(text) {
-        const t = String(text || '');
-        const lines = t.split('\n').length;
-        return Math.max(2, Math.min(10, lines + Math.ceil(t.length / 70)));
-    }
-
-    buildCondCells(idx, tipo, item) {
-        const codigo = this.escape(item.codigo || '');
-
-        if (!tipo) {
-            return '<td class="cond-col cond-col-ac"></td><td class="cond-col cond-col-pct"></td>';
-        }
-
-        const omText = dataManager.getOmActividad(item, tipo);
-        const avance = dataManager.getOmAvance(item, tipo);
-        const rows = this._textareaRows(omText);
-        const placeholder = tipo === 'Acción de Mejora'
-            ? 'N° de OM / descripción (Acción Correctiva)...'
-            : 'N° de OM / descripción (Acciones / Actividades)...';
-
-        const cond1 = `<td class="cond-col cond-col-ac">
-            <div class="cond-cell-actions cond-cell-actions--stack">
-                <textarea class="cond-cell-textarea cond-cell-textarea-full" id="ac_om_${idx}"
-                    rows="${rows}" placeholder="${placeholder}">${this.escape(omText)}</textarea>
-                <button class="btn-save-diligencia" title="Guardar" onclick="event.stopPropagation(); dashboard.guardarDiligencia('${codigo}', ${idx})">
-                    <i class="fas fa-save"></i>
-                </button>
-            </div>
-        </td>`;
-
-        const cond2 = `<td class="cond-col cond-col-pct">
-            <span class="cond-cell-label">% Avance</span>
-            <input type="number" class="cond-cell-input cond-cell-input-pct" id="ac_avance_${idx}"
-                value="${avance}" min="0" max="100">
-        </td>`;
-
-        return cond1 + cond2;
-    }
-
-    /**
-     * Celda "Resultado" (resultado de validación), al final de la fila.
-     * Solo editable para Tipo de Acción = Acción Correctiva.
-     */
-    buildResultadoCell(idx, tipo, item) {
-        if (tipo !== 'Acción Correctiva') {
-            return '<td class="text-muted text-center">—</td>';
-        }
-        const resultado = item.resultado_validacion || '';
-        const options = ['', 'Eficaz', 'No eficaz', 'Parcialmente eficaz'];
-        return `<td>
-            <select class="form-select form-select-sm" id="ac_resval_${idx}">
-                ${options.map(opt => `<option value="${this.escape(opt)}" ${resultado === opt ? 'selected' : ''}>${opt || '-- Selec. --'}</option>`).join('')}
-            </select>
-        </td>`;
-    }
-
-    /**
-     * Mostrar/ocultar headers de columnas condicionales
-     */
-    updateConditionalHeaders(data) {
-        const tipos = new Set(data.map(d => d.tipo_accion).filter(Boolean));
-        const table = document.getElementById('tablaSeguimientoDetallado');
-
-        table.classList.toggle('show-col-ac', tipos.size > 0);
-        table.classList.toggle('show-col-pct', tipos.size > 0);
-
-        const th1 = document.getElementById('thCond1');
-        if (tipos.size > 0) {
-            th1.textContent = 'N° de OM / Descrip de Actividad';
-        }
-    }
-
-    /**
-     * Manejar cambio de Tipo de Acción.
-     * Actualiza en memoria y reconstruye las celdas condicionales de esa fila.
-     * No guarda en Supabase — el usuario debe pulsar el botón guardar.
-     */
-    onTipoAccionChange(idx, value) {
+    abrirSeguimiento(idx) {
         const record = this.currentData[idx];
+        const modalEl = document.getElementById('modalSeguimiento');
+        if (!record || !modalEl) return;
+        this._segIdx = idx;
+
+        const tipo = record.tipo_accion || '';
+        document.getElementById('segModalEyebrow').textContent = `${record.categoria || 'Hallazgo'} · ${record.codigo}`;
+        document.getElementById('modalSeguimientoTitulo').textContent = record.nombre || 'Hallazgo sin nombre';
+
+        const campos = [
+            ['Unidad', record.unidad],
+            ['Proceso', record.proceso],
+            ['Subproceso', record.subproceso],
+            ['Líder / responsable', record.lider || record.responsable_proceso],
+            ['Fecha de detección', record.fecha_deteccion ? this.formatDate(record.fecha_deteccion) : '']
+        ].filter(([, v]) => String(v || '').trim());
+        document.getElementById('segModalHallazgo').innerHTML = `
+            <div class="seg-ficha">
+                ${campos.map(([l, v]) => `<div class="seg-ficha-campo"><span>${l}</span><p>${this.escape(v)}</p></div>`).join('')}
+            </div>
+            <div class="seg-bloque"><span>Descripción del hallazgo</span><p>${this.escape(record.descripcion || '—')}</p></div>
+            ${String(record.recomendaciones || '').trim() ? `<div class="seg-bloque"><span>Recomendación</span><p>${this.escape(record.recomendaciones)}</p></div>` : ''}
+        `;
+
+        document.getElementById('segTipo').value = tipo;
+        document.getElementById('segAvance').value = dataManager.getOmAvance(record, tipo);
+        document.getElementById('segActividad').value = dataManager.getOmActividad(record, tipo);
+        document.getElementById('segTipoValidacion').value = record.tipo_validacion || '';
+        document.getElementById('segResultado').value = record.resultado_validacion || '';
+        this._mostrarEstadoSeguimiento('');
+        this._mostrarEstadoSeguimiento('', '', 'segEstadoValidacion');
+        this._actualizarFormSeguimiento();
+        this._aplicarPermisosSeguimiento();
+
+        if (!modalEl._bound) {
+            modalEl._bound = true;
+            document.getElementById('segTipo').addEventListener('change', (e) => {
+                const actual = this.currentData[this._segIdx];
+                // Al cambiar de tipo se propone el texto ya registrado para ese tipo
+                if (actual) document.getElementById('segActividad').value = dataManager.getOmActividad(actual, e.target.value);
+                this._actualizarFormSeguimiento();
+            });
+            document.getElementById('formSeguimiento').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.guardarSeguimiento();
+            });
+            document.getElementById('formValidacion').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.guardarValidacion();
+            });
+        }
+
+        if (window.bootstrap?.Modal) {
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+    }
+
+    _actualizarFormSeguimiento() {
+        const tipo = document.getElementById('segTipo').value;
+        const etiquetas = {
+            'Acción Correctiva': 'N° de OM / acciones o actividades',
+            'Corrección': 'Descripción de la corrección',
+            'Acción de Mejora': 'Descripción de la mejora (N° de OM / actividad)'
+        };
+        document.getElementById('segActividadLabel').textContent = etiquetas[tipo] || 'N° de OM / descripción de la actividad';
+        document.getElementById('segActividad').disabled = !tipo;
+        document.getElementById('segAvance').disabled = !tipo;
+    }
+
+    /**
+     * Habilitar cada momento según lo que puede registrar quien ve el tablero:
+     * el proceso registra la acción y auditoría valida la eficacia.
+     */
+    async _aplicarPermisosSeguimiento() {
+        const permisos = await diligenciaService.permisos();
+        const record = this.currentData[this._segIdx];
+        const tieneAccion = !!(record && record.tipo_accion);
+        const aplicar = (fieldsetId, botonId, avisoId, puede, mensajeSinPermiso, bloqueo) => {
+            const aviso = document.getElementById(avisoId);
+            const mensaje = puede === false ? mensajeSinPermiso : bloqueo;
+            document.getElementById(fieldsetId).disabled = !!mensaje;
+            document.getElementById(botonId).disabled = !!mensaje;
+            aviso.hidden = !mensaje;
+            aviso.textContent = mensaje || '';
+        };
+        aplicar('segFieldsetProceso', 'segGuardar', 'segPermisoProceso', permisos.proceso,
+            'Su acceso a este tablero es de solo lectura. Para registrar la acción, pida al propietario acceso de Colaborador.', '');
+        aplicar('segFieldsetAuditoria', 'segGuardarValidacion', 'segPermisoAuditoria', permisos.auditoria,
+            'La validación la registra el equipo de auditoría (Editores del tablero).',
+            tieneAccion ? '' : 'Disponible cuando el proceso registre la acción.');
+    }
+
+    _mostrarEstadoSeguimiento(texto, tipo = '', id = 'segEstado') {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = texto;
+        el.className = `seg-estado${tipo ? ` is-${tipo}` : ''}`;
+    }
+
+    _mensajeErrorGuardado() {
+        const codigo = diligenciaService.ultimoError;
+        if (codigo === 'invalid_argument') {
+            const acceso = typeof diligenciaService.describirAcceso === 'function' ? diligenciaService.describirAcceso() : '';
+            return `Su cuenta no tiene permiso para guardar esta sección; quedó solo en este navegador.${acceso ? ` ${acceso}` : ''}`;
+        }
+        return `No se pudo guardar en línea${codigo ? ` (${codigo})` : ''}. Quedó en este navegador; intente de nuevo.`;
+    }
+
+    async guardarValidacion() {
+        const record = this.currentData[this._segIdx];
         if (!record) return;
 
-        record.tipo_accion = value;
+        const resultado = document.getElementById('segResultado').value;
+        if (!resultado) {
+            this._mostrarEstadoSeguimiento('Seleccione el resultado de la validación.', 'error', 'segEstadoValidacion');
+            return;
+        }
+        const payload = {
+            tipo_validacion: document.getElementById('segTipoValidacion').value.trim(),
+            resultado_validacion: resultado
+        };
 
-        const select = document.querySelector(`.tipo-accion-select[data-index="${idx}"]`);
-        if (!select) return;
+        const btn = document.getElementById('segGuardarValidacion');
+        btn.disabled = true;
+        this._mostrarEstadoSeguimiento('Guardando…', '', 'segEstadoValidacion');
 
-        const row = select.closest('tr');
-        if (!row) return;
+        Object.assign(record, payload);
+        dataManager.syncRecordByCodigo(record.codigo, payload);
+        const ok = await diligenciaService.saveValidacion(record.codigo, payload);
 
-        const cells = row.querySelectorAll('td');
+        btn.disabled = false;
+        this._mostrarEstadoSeguimiento(ok ? 'Validación guardada.' : this._mensajeErrorGuardado(), ok ? 'ok' : 'error', 'segEstadoValidacion');
+        this.renderDetalladoTable();
+    }
 
-        // Celdas condicionales (N° de OM, % Avance OM) en posiciones fijas 7 y 8
-        const condRow = document.createElement('tr');
-        condRow.innerHTML = this.buildCondCells(idx, value, record);
-        const newCondCells = Array.from(condRow.querySelectorAll('td'));
-        if (cells[7] && newCondCells[0]) cells[7].replaceWith(newCondCells[0]);
-        if (cells[8] && newCondCells[1]) cells[8].replaceWith(newCondCells[1]);
+    async guardarSeguimiento() {
+        const record = this.currentData[this._segIdx];
+        if (!record) return;
 
-        // Celda de Resultado (posición 10, tras % Avance en 9)
-        const resRow = document.createElement('tr');
-        resRow.innerHTML = this.buildResultadoCell(idx, value, record);
-        const newResCell = resRow.querySelector('td');
-        if (cells[10] && newResCell) cells[10].replaceWith(newResCell);
+        const tipo = document.getElementById('segTipo').value;
+        if (!tipo) {
+            this._mostrarEstadoSeguimiento('Seleccione el tipo de acción.', 'error');
+            return;
+        }
+        const avance = Math.min(100, Math.max(0, parseInt(document.getElementById('segAvance').value, 10) || 0));
+        const actividad = document.getElementById('segActividad').value.trim();
 
-        this.updateConditionalHeaders(this.currentData);
+        const payload = { tipo_accion: tipo, avance_porcentaje: avance };
+        if (tipo === 'Acción Correctiva') {
+            payload.accion_correctiva = actividad;
+        } else if (tipo === 'Corrección') {
+            payload.correccion_descripcion = actividad;
+        } else if (tipo === 'Acción de Mejora') {
+            payload.mejora_descripcion = actividad;
+        }
+
+        const btn = document.getElementById('segGuardar');
+        btn.disabled = true;
+        this._mostrarEstadoSeguimiento('Guardando…');
+
+        Object.assign(record, payload);
+        dataManager.syncRecordByCodigo(record.codigo, payload);
+        const ok = await diligenciaService.save(record.codigo, payload);
+
+        btn.disabled = false;
+        this._mostrarEstadoSeguimiento(ok ? 'Acción guardada.' : this._mensajeErrorGuardado(), ok ? 'ok' : 'error');
+        this._aplicarPermisosSeguimiento();
+        this.renderDetalladoTable();
     }
 
     /**
@@ -1144,65 +1208,33 @@ class Dashboard {
      */
     buildGestionAccion(record, index) {
         const tipo = record.tipo_accion || '';
-
-        if (tipo === 'Acción Correctiva') {
-            return `
-                <div class="detail-action-box">
-                    <div class="detail-grid">
-                        <div class="detail-field">
-                            <div class="detail-field-label">NÚMERO / DESCRIPCIÓN ACCIÓN CORRECTIVA</div>
-                            <div class="detail-field-value">${this.escape(record.accion_correctiva) || '—'}</div>
-                        </div>
-                        <div class="detail-field">
-                            <div class="detail-field-label">% AVANCE</div>
-                            <div class="detail-field-value">${record.avance_porcentaje}%</div>
-                        </div>
-                        <div class="detail-field">
-                            <div class="detail-field-label">TIPO DE VALIDACIÓN</div>
-                            <div class="detail-field-value">${this.escape(record.tipo_validacion) || '—'}</div>
-                        </div>
-                        <div class="detail-field">
-                            <div class="detail-field-label">RESULTADO DE VALIDACIÓN</div>
-                            <div class="detail-field-value">${this.escape(record.resultado_validacion) || '—'}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (tipo === 'Corrección') {
-            return `
-                <div class="detail-action-box">
-                    <div class="detail-field">
-                        <div class="detail-field-label">DESCRIPCIÓN DE LA CORRECCIÓN</div>
-                        <textarea class="form-control form-control-sm" rows="3" placeholder="Describa la corrección realizada..."
-                            id="campoCorreccion_${index}"
-                            onchange="dashboard.saveCampoTexto(${index}, 'correccion_descripcion', this.value)">${this.escape(record.correccion_descripcion || '')}</textarea>
-                    </div>
-                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="dashboard.saveCampoTexto(${index}, 'correccion_descripcion', document.getElementById('campoCorreccion_${index}').value)">
-                        <i class="fas fa-save me-1"></i> Guardar
-                    </button>
-                </div>
-            `;
-        } else if (tipo === 'Acción de Mejora') {
-            return `
-                <div class="detail-action-box">
-                    <div class="detail-field">
-                        <div class="detail-field-label">DESCRIPCIÓN DE LA MEJORA</div>
-                        <textarea class="form-control form-control-sm" rows="3" placeholder="Describa la mejora implementada..."
-                            id="campoMejora_${index}"
-                            onchange="dashboard.saveCampoTexto(${index}, 'mejora_descripcion', this.value)">${this.escape(record.mejora_descripcion || '')}</textarea>
-                    </div>
-                    <button class="btn btn-sm btn-outline-primary mt-2" onclick="dashboard.saveCampoTexto(${index}, 'mejora_descripcion', document.getElementById('campoMejora_${index}').value)">
-                        <i class="fas fa-save me-1"></i> Guardar
-                    </button>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="detail-action-box text-muted text-center py-3">
-                    <i class="fas fa-info-circle me-1"></i> Seleccione un Tipo de Acción en la tabla de Seguimiento Detallado
-                </div>
-            `;
+        const actividad = dataManager.getOmActividad(record, tipo);
+        const boton = `
+            <button class="btn btn-sm btn-primary mt-2" type="button" data-bs-dismiss="offcanvas" onclick="dashboard.abrirSeguimiento(${index})">
+                <i class="fas fa-pen-to-square me-1"></i> ${tipo ? 'Editar seguimiento' : 'Registrar seguimiento'}
+            </button>`;
+        if (!tipo) {
+            return `<div class="detail-action-box text-muted">Sin seguimiento registrado.${boton}</div>`;
         }
+        return `
+            <div class="detail-action-box">
+                <div class="detail-grid">
+                    <div class="detail-field">
+                        <div class="detail-field-label">TIPO DE ACCIÓN</div>
+                        <div class="detail-field-value">${this.escape(tipo)}</div>
+                    </div>
+                    <div class="detail-field">
+                        <div class="detail-field-label">% AVANCE</div>
+                        <div class="detail-field-value">${dataManager.getOmAvance(record, tipo)}%</div>
+                    </div>
+                </div>
+                <div class="detail-field mt-2">
+                    <div class="detail-field-label">N° DE OM / ACTIVIDAD</div>
+                    <div class="detail-text-box">${this.escape(actividad) || '—'}</div>
+                </div>
+                ${boton}
+            </div>
+        `;
     }
 
     /**
@@ -1234,101 +1266,6 @@ class Dashboard {
         });
         html += '</div>';
         return html;
-    }
-
-    /**
-     * Guardar diligenciamiento de un hallazgo en Supabase.
-     * Lee los valores del DOM de la fila correspondiente y llama a diligenciaService.save().
-     * @param {string} codigo - Código del hallazgo (PK en Supabase)
-     * @param {number} idx    - Índice del registro en currentData (para actualizar memoria y UI)
-     */
-    async guardarDiligencia(codigo, idx) {
-        const record = this.currentData[idx];
-        if (!record) return;
-
-        // Leer valores actuales de los inputs/textareas de la fila
-        const tipo = record.tipo_accion || '';
-        const payload = { tipo_accion: tipo };
-
-        const elOm     = document.getElementById(`ac_om_${idx}`);
-        const elAvance = document.getElementById(`ac_avance_${idx}`);
-        const avanceVal = elAvance ? parseInt(elAvance.value, 10) : dataManager.getOmAvance(record, tipo);
-
-        if (tipo === 'Acción Correctiva') {
-            const elResV  = document.getElementById(`ac_resval_${idx}`);
-            payload.accion_correctiva    = elOm ? elOm.value : (record.accion_correctiva || '');
-            payload.avance_porcentaje    = isNaN(avanceVal) ? 0 : avanceVal;
-            payload.resultado_validacion = elResV  ? elResV.value  : (record.resultado_validacion || '');
-        } else if (tipo === 'Corrección') {
-            payload.correccion_descripcion = elOm ? elOm.value : (record.correccion_descripcion || '');
-            payload.avance_porcentaje = isNaN(avanceVal) ? 0 : avanceVal;
-        } else if (tipo === 'Acción de Mejora') {
-            payload.mejora_descripcion = elOm ? elOm.value : (record.mejora_descripcion || '');
-            payload.avance_porcentaje = isNaN(avanceVal) ? 0 : avanceVal;
-        }
-
-        // Actualizar registro en memoria y en el dataset consolidado
-        Object.assign(record, payload);
-        dataManager.syncRecordByCodigo(codigo, payload);
-
-        // Feedback visual inmediato: cambiar icono a spinner
-        const btn = this._findSaveButton(idx);
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        }
-
-        const ok = await diligenciaService.save(codigo, payload);
-
-        if (btn) {
-            if (ok) {
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.classList.add('saved');
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-save"></i>';
-                    btn.classList.remove('saved');
-                    btn.disabled = false;
-                }, 1800);
-            } else {
-                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                btn.classList.add('error');
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-save"></i>';
-                    btn.classList.remove('error');
-                    btn.disabled = false;
-                }, 2500);
-            }
-        }
-
-        this._refreshAvanceBadge(idx, dataManager.getOmAvance(record, tipo));
-    }
-
-    /**
-     * Localizar el botón guardar de una fila por índice.
-     */
-    _findSaveButton(idx) {
-        const select = document.querySelector(`.tipo-accion-select[data-index="${idx}"]`);
-        if (!select) return null;
-        const row = select.closest('tr');
-        if (!row) return null;
-        return row.querySelector('.btn-save-diligencia');
-    }
-
-    /**
-     * Refrescar visualmente la barra de avance en la fila del hallazgo.
-     */
-    _refreshAvanceBadge(idx, avance) {
-        const select = document.querySelector(`.tipo-accion-select[data-index="${idx}"]`);
-        if (!select) return;
-        const row = select.closest('tr');
-        if (!row) return;
-        const bar = row.querySelector('.progress-bar');
-        const label = row.querySelector('.progress-bar + small');
-        if (bar) {
-            bar.style.width = `${avance}%`;
-            bar.className = `progress-bar ${avance >= 100 ? 'bg-success' : avance > 0 ? 'bg-primary' : 'bg-secondary'}`;
-        }
-        if (label) label.textContent = `${avance}%`;
     }
 
     /**

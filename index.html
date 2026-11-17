@@ -36,7 +36,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css?v=20260826f">
     <!-- Capa de identidad POLI (Manual de Marca) -->
-    <link rel="stylesheet" href="css/identidad-poli.css?v=20261030d">
+    <link rel="stylesheet" href="css/identidad-poli.css?v=20261113">
 </head>
 <body>
     <!-- Navbar Principal -->
@@ -371,18 +371,13 @@
                         <table id="tablaSeguimientoDetallado" class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>Auditoría</th>
-                                    <th>Subproceso</th>
-                                    <th>Criticidad</th>
-                                    <th>Descripción</th>
-                                    <th>Responsable</th>
+                                    <th>Hallazgo</th>
+                                    <th>Proceso y responsable</th>
                                     <th>Estado</th>
-                                    <th>Tipo de Acción</th>
-                                    <th class="cond-col cond-col-ac" id="thCond1">N° de OM / Descrip de Actividad</th>
-                                    <th class="cond-col cond-col-pct" id="thCond2">% Avance OM</th>
+                                    <th>Acción registrada</th>
                                     <th>% Avance</th>
                                     <th>Resultado</th>
-                                    <th>Acciones</th>
+                                    <th class="text-end">Seguimiento</th>
                                 </tr>
                             </thead>
                             <tbody id="tbodyDetallado">
@@ -409,6 +404,82 @@
             </div>
             <div class="offcanvas-body p-0" id="contenidoDetalleHallazgo">
                 <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Formulario emergente - Seguimiento de auditoría -->
+        <div class="modal fade" id="modalSeguimiento" tabindex="-1" aria-labelledby="modalSeguimientoTitulo" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header seg-modal-header">
+                        <div>
+                            <div class="seg-modal-eyebrow" id="segModalEyebrow"></div>
+                            <h5 class="modal-title" id="modalSeguimientoTitulo">Registrar seguimiento</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="segModalHallazgo"></div>
+                        <!-- Momento 1: el proceso registra la acción o actividad -->
+                        <form id="formSeguimiento" class="seg-form" novalidate>
+                            <div class="seg-form-title"><span class="seg-paso">1</span>Acción del proceso</div>
+                            <p class="seg-form-ayuda">El proceso registra la acción o actividad realizada y su avance.</p>
+                            <div class="seg-permiso" id="segPermisoProceso" hidden></div>
+                            <fieldset id="segFieldsetProceso" class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label" for="segTipo">Tipo de acción</label>
+                                    <select id="segTipo" class="form-select">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="Acción Correctiva">Acción Correctiva</option>
+                                        <option value="Corrección">Corrección</option>
+                                        <option value="Acción de Mejora">Acción de Mejora</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="segAvance">% Avance</label>
+                                    <input type="number" id="segAvance" class="form-control" min="0" max="100" step="1">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="segActividad" id="segActividadLabel">N° de OM / descripción de la actividad</label>
+                                    <textarea id="segActividad" class="form-control" rows="4"></textarea>
+                                </div>
+                            </fieldset>
+                            <div class="seg-acciones">
+                                <span id="segEstado" class="seg-estado" role="status" aria-live="polite"></span>
+                                <button type="submit" class="btn btn-primary" id="segGuardar"><i class="fas fa-save me-1"></i>Guardar acción</button>
+                            </div>
+                        </form>
+
+                        <!-- Momento 2: auditoría valida la eficacia -->
+                        <form id="formValidacion" class="seg-form" novalidate>
+                            <div class="seg-form-title"><span class="seg-paso">2</span>Validación de auditoría</div>
+                            <p class="seg-form-ayuda">Auditoría verifica la acción registrada y define si fue eficaz.</p>
+                            <div class="seg-permiso" id="segPermisoAuditoria" hidden></div>
+                            <fieldset id="segFieldsetAuditoria" class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="segTipoValidacion">Tipo de validación</label>
+                                    <input type="text" id="segTipoValidacion" class="form-control" placeholder="Ej.: revisión documental, entrevista, verificación en sitio">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="segResultado">Resultado</label>
+                                    <select id="segResultado" class="form-select">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="Eficaz">Eficaz</option>
+                                        <option value="Parcialmente eficaz">Parcialmente eficaz</option>
+                                        <option value="No eficaz">No eficaz</option>
+                                    </select>
+                                </div>
+                            </fieldset>
+                            <div class="seg-acciones">
+                                <span id="segEstadoValidacion" class="seg-estado" role="status" aria-live="polite"></span>
+                                <button type="submit" class="btn btn-primary" id="segGuardarValidacion"><i class="fas fa-save me-1"></i>Guardar validación</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -442,7 +513,7 @@
     <!-- Custom Scripts -->
     <script src="js/dataManager.js?v=20261030b"></script>
     <script src="js/diligenciaService.js?v=20260828"></script>
-    <script src="js/dashboard.js?v=20261030"></script>
+    <script src="js/dashboard.js?v=20261113"></script>
     <script src="js/filters.js?v=20260828"></script>
     <script src="js/exports.js?v=20260828"></script>
     <script src="js/app.js?v=20261030b"></script>

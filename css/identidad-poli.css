@@ -222,6 +222,69 @@ h4, h5, h6, .h4, .h5, .h6 { color: var(--poli-navy); text-wrap: balance; }
 .badge.bg-secondary { background: var(--poli-ink-faint) !important; }
 .badge.bg-danger { background: var(--poli-magenta) !important; }
 
+/* ---------- Seguimiento detallado: tabla de lectura ---------- */
+#tablaSeguimientoDetallado { min-width: 980px; }
+#tablaSeguimientoDetallado td { vertical-align: top; padding: 0.85rem 0.75rem; }
+#tablaSeguimientoDetallado td:nth-child(4) {
+    /* anula el ancho fijo de la columna de descripción del diseño anterior */
+    max-width: none; font-size: inherit; color: inherit;
+}
+#tablaSeguimientoDetallado tbody tr { cursor: default; }
+.seg-col-hallazgo { width: 40%; min-width: 320px; }
+.seg-col-proceso { width: 18%; min-width: 170px; }
+.seg-col-accion { width: 18%; min-width: 170px; }
+.seg-col-avance { min-width: 110px; }
+.seg-col-acciones { white-space: nowrap; text-align: right; }
+.seg-col-acciones .btn + .btn { margin-left: 0.35rem; }
+.seg-nombre { color: var(--poli-navy); font-weight: 700; font-size: 0.86rem; line-height: 1.35; margin-top: 0.45rem; }
+.seg-desc { color: var(--poli-ink-soft); font-size: 0.8rem; line-height: 1.5; margin-top: 0.3rem; white-space: pre-line; }
+.seg-proc { color: var(--poli-navy); font-weight: 600; font-size: 0.8rem; }
+.seg-sub { color: var(--poli-ink-soft); font-size: 0.78rem; margin-top: 0.15rem; }
+.seg-resp { color: var(--poli-ink-soft); font-size: 0.75rem; margin-top: 0.45rem; }
+.seg-resp i { color: var(--poli-azul); margin-right: 0.2rem; }
+.seg-tipo {
+    display: inline-block; background: var(--poli-azul-tint); color: var(--poli-navy);
+    font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 999px;
+}
+.seg-om { color: var(--poli-ink-soft); font-size: 0.76rem; line-height: 1.45; margin-top: 0.4rem; }
+.seg-vacio { color: var(--poli-ink-faint); font-size: 0.76rem; font-style: italic; }
+.seg-avance { display: flex; align-items: center; gap: 0.5rem; }
+.seg-avance .progress { flex: 1; height: 6px; min-width: 50px; }
+.seg-avance span { font-weight: 700; font-size: 0.78rem; color: var(--poli-navy); }
+
+/* ---------- Formulario emergente de seguimiento ---------- */
+.seg-modal-header { background: var(--poli-navy); color: #fff; border-bottom: 4px solid var(--poli-azul); align-items: flex-start; }
+.seg-modal-header .modal-title { color: #fff; font-weight: 700; font-size: 1.05rem; line-height: 1.35; }
+.seg-modal-eyebrow { color: var(--poli-azul); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.2rem; }
+#modalSeguimiento .modal-content { border: 0; border-radius: var(--radius-lg); overflow: hidden; }
+#modalSeguimiento .modal-body { padding: 1.25rem; }
+.seg-ficha { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.6rem; margin-bottom: 0.9rem; }
+.seg-ficha-campo, .seg-bloque { background: #F5F7FA; border-left: 3px solid var(--poli-azul); padding: 0.55rem 0.75rem; }
+.seg-ficha-campo span, .seg-bloque span { display: block; color: var(--poli-ink-soft); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.seg-ficha-campo p, .seg-bloque p { color: var(--poli-navy); margin: 0.2rem 0 0; font-size: 0.84rem; white-space: pre-line; }
+.seg-bloque { margin-bottom: 0.75rem; }
+.seg-form { border-top: 2px solid var(--poli-line); margin-top: 1rem; padding-top: 1rem; }
+.seg-form-title { color: var(--poli-navy); font-weight: 800; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.seg-form-title i { color: var(--poli-azul); }
+.seg-form .form-label { font-size: 0.7rem !important; font-weight: 700; }
+.seg-form textarea { line-height: 1.5; }
+.seg-paso {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.5rem; height: 1.5rem; margin-right: 0.5rem; border-radius: 50%;
+    background: var(--poli-azul); color: #fff; font-size: 0.75rem;
+}
+.seg-form-ayuda { color: var(--poli-ink-soft); font-size: 0.8rem; margin: -0.35rem 0 0.75rem; }
+.seg-permiso {
+    background: var(--poli-dorado-tint); border-left: 3px solid var(--poli-dorado); color: #7A5900;
+    font-size: 0.8rem; font-weight: 600; padding: 0.55rem 0.75rem; margin-bottom: 0.75rem;
+}
+.seg-form fieldset:disabled { opacity: 0.6; }
+.seg-acciones { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.85rem; }
+.seg-acciones .seg-estado { margin-right: auto; }
+.seg-estado { font-size: 0.8rem; font-weight: 600; color: var(--poli-ink-soft); }
+.seg-estado.is-ok { color: var(--poli-lima-ink); }
+.seg-estado.is-error { color: #A3004E; }
+
 /* ---------- Gestión operativa ---------- */
 .semaforo-item { background: #F5F7FA; }
 .semaforo-rojo { border-left-color: var(--poli-magenta); }

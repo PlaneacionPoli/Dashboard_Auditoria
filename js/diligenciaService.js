@@ -80,15 +80,20 @@ class DiligenciaService {
     async save(codigo, payload) {
         if (!codigo) return false;
 
+        // Los campos que este guardado no trae conservan lo ya registrado:
+        // el proceso y auditoría guardan en momentos distintos sobre el mismo hallazgo
+        const previo = this.cache[codigo] || {};
+        const valor = (campo) => payload[campo] !== undefined ? payload[campo] : (previo[campo] ?? null);
+        const avance = valor('avance_porcentaje');
         const record = {
             codigo_hallazgo: codigo,
-            tipo_accion:            payload.tipo_accion            ?? null,
-            accion_correctiva:      payload.accion_correctiva      ?? null,
-            correccion_descripcion: payload.correccion_descripcion ?? null,
-            mejora_descripcion:     payload.mejora_descripcion     ?? null,
-            avance_porcentaje:      payload.avance_porcentaje      != null ? parseInt(payload.avance_porcentaje, 10) : null,
-            tipo_validacion:        payload.tipo_validacion        ?? null,
-            resultado_validacion:   payload.resultado_validacion   ?? null
+            tipo_accion:            valor('tipo_accion'),
+            accion_correctiva:      valor('accion_correctiva'),
+            correccion_descripcion: valor('correccion_descripcion'),
+            mejora_descripcion:     valor('mejora_descripcion'),
+            avance_porcentaje:      avance != null ? parseInt(avance, 10) : null,
+            tipo_validacion:        valor('tipo_validacion'),
+            resultado_validacion:   valor('resultado_validacion')
         };
 
         // Actualizar cache local siempre
@@ -111,6 +116,25 @@ class DiligenciaService {
             console.error(`✗ DiligenciaService: error al guardar ${codigo}:`, e);
             return false;
         }
+    }
+
+    /**
+     * Guardar la validación de auditoría (eficacia de la acción).
+     * En Supabase va en el mismo registro del hallazgo.
+     */
+    async saveValidacion(codigo, payload) {
+        return this.save(codigo, {
+            tipo_validacion: payload.tipo_validacion ?? null,
+            resultado_validacion: payload.resultado_validacion ?? null
+        });
+    }
+
+    /**
+     * Qué puede registrar quien está viendo el tablero.
+     * true = puede, false = no puede, null = no se sabe (se deja intentar).
+     */
+    async permisos() {
+        return { proceso: null, auditoria: null };
     }
 
     /**
